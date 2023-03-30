@@ -1,17 +1,21 @@
 import tkinter as tk
 from tkinter import ttk
 from tkinter import messagebox as mb
-import sv_ttk
+teams = 0
+indivs = 0
 team = {
-    "id" : "no",
+    "id" : "t0",
     "name0" : ""
+}
+indiv ={
+     "id" : "i0",
+     "name" : ""
 }
 butts = []
 root = tk.Tk()
 root.geometry("800x600")
 root.title("Tournament Scoring System")
 s = ttk.Style()
-s.theme_use("dark")
 def create(c):
         createwin = tk.Toplevel(root)
         createwin.geometry("400x600")
@@ -23,8 +27,6 @@ def create(c):
             name.pack()
             nameent = ttk.Entry(createwin)
             nameent.pack()
-
-
 
             names = tk.Frame(createwin)
             names.pack(pady = 20)
