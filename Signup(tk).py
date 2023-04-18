@@ -1,3 +1,4 @@
+from concurrent.futures import thread
 import tkinter as tk
 from tkinter import ttk
 from tkinter import messagebox as mb
@@ -6,11 +7,16 @@ import glob
 import datetime
 import json
 import threading
+import subprocess
+from subprocess import Popen
+from multiprocessing import Process
+import time
 #Backend===================================================================================
 logs = []
 version = "0.0"
 teams = 0
 indivs = 0
+
 def Log(ob):
     global f
     now = datetime.datetime.now()
@@ -246,34 +252,34 @@ for i in os.listdir(indivpath):
         ibutts.append(ttk.Button(indivsf, text = name))
         ibutts[-1].pack(padx = 50)
 
-t1 = None
-def update():
-    global t1
-    Log("updated")
-    for i in os.listdir(filepath):
-        if i != "empty_team.json":
-            for i in ibutts:
-                i.pack_forget()
-                
-    t1 = threading.Timer(5, update)
-    t1.start()
-    return t1
-                
 
-    
-update()
+def update():
+    while True:
+        Log("updated")
+        # for i in os.listdir(filepath):
+        #     if i != "empty_team.json":
+        #         for i in ibutts:
+        #             i.pack_forget()
+
+        time.sleep(5)
+t1 = threading.Thread(target=update, daemon = True)
+t1.start()
+
+
+                
 
 def on_closing():
     Log("Closing")
     #close log file
     f.close()
     #Joins Update thread with main thread then closes
-    t1.join()
     #close window and quit
     root.destroy()
     root.quit()
     quit(0)
 
+
+    
 root.protocol("WM_DELETE_WINDOW", on_closing)
 root.mainloop()
 #Frontend==================================================================================
