@@ -114,6 +114,7 @@ for i in os.listdir():
 for i in os.listdir():
      if i.find("i") == -1:
         write("i", True)
+
 #Backend===================================================================================
 #Frontend==================================================================================
 Log("Started")
@@ -245,15 +246,18 @@ for i in os.listdir(indivpath):
         ibutts.append(ttk.Button(indivsf, text = name))
         ibutts[-1].pack(padx = 50)
 
-
+t1 = None
 def update():
+    global t1
     Log("updated")
     for i in os.listdir(filepath):
         if i != "empty_team.json":
             for i in ibutts:
                 i.pack_forget()
                 
-    threading.Timer(5, update).start()
+    t1 = threading.Timer(5, update)
+    t1.start()
+    return t1
                 
 
     
@@ -263,9 +267,13 @@ def on_closing():
     Log("Closing")
     #close log file
     f.close()
+    #Joins Update thread with main thread then closes
+    t1.join()
     #close window and quit
-    root.quit()
     root.destroy()
+    root.quit()
+    quit(0)
+
 root.protocol("WM_DELETE_WINDOW", on_closing)
 root.mainloop()
 #Frontend==================================================================================
