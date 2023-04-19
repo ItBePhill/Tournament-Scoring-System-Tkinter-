@@ -1,4 +1,3 @@
-from concurrent.futures import thread
 import tkinter as tk
 from tkinter import ttk
 from tkinter import messagebox as mb
@@ -8,8 +7,6 @@ import datetime
 import json
 import threading
 import subprocess
-from subprocess import Popen
-from multiprocessing import Process
 import time
 #Backend===================================================================================
 logs = []
@@ -21,12 +18,11 @@ def Log(ob):
     global f
     now = datetime.datetime.now()
     ob = str(ob)
-    final = "\n\n"+now.strftime("%Y-%m-%d %H:%M:%S") + ": " + ob
+    final = "\n\n["+now.strftime("%Y-%m-%d %H:%M:%S") + "]: " + ob
     print(final)
     with open(os.path.join(os.getcwd(), "Logs", str(len(logs)))+ " " +now.strftime("%Y-%m-%d")+ " log.txt" , "a") as f:
         f.write(final)
     return f
-
 team = {
     "id" : "t0",
     "teamname" : "",
@@ -53,6 +49,8 @@ if not os.path.exists(teampath):
     os.mkdir(teampath)
 if not os.path.exists(indivpath):
     os.mkdir(indivpath)
+Log("Log " + str(len(logs)))
+Log("Program Started Successfully!")
 #Create Tkinter window and set title + size
 root = tk.Tk()
 root.geometry("800x600")
@@ -123,7 +121,6 @@ for i in os.listdir():
 
 #Backend===================================================================================
 #Frontend==================================================================================
-Log("Started")
 
 teamdata, indivdata = read()
 teams = int(teamdata["id"][1])
@@ -133,7 +130,11 @@ indivs = int(str(indivs1)+str(indivs2))
 Log("Teams: "+str(teams))
 Log("Indivs: "+str(indivs))
 
+
+
+
 def create(c):
+        global teams, indivs
         #Set dictionaries and call write()
         def Set(c):
             if c == "t":
@@ -206,6 +207,8 @@ def create(c):
             namei.pack()
             addi = ttk.Button(createwin, text = "Create Individual", command = lambda: Set("i"))
             addi.pack(pady = 10)
+        return teams, indivs
+        
 
 
     
@@ -214,13 +217,22 @@ def create(c):
 
 lab =  ttk.Label(text = "Tournament Scoring System", font = ("Segoe UI", 16))
 lab.pack(pady = 10)
-indivbutt =  ttk.Button(text = "Create an Individual", command = lambda : create("i"))
+
+
+indivframe = tk.Frame()
+indivframe.pack()
+teamframe = tk.Frame()
+teamframe.pack()
+indivamt = ttk.Label(indivframe, text = "Individuals: "+ str(indivs) + "\nTeams: "+ str(teams))
+indivamt.pack()
+indivbutt =  ttk.Button(indivframe, text = "Create an Individual", command = lambda: create("i"))
 indivbutt.pack()
-teambutt = ttk.Button(text = "Create a Team", command = lambda : create("t"))
+teambutt = ttk.Button(teamframe, text = "Create a Team", command = lambda: create("t"))
 teambutt.pack()
 
 teamsf = ttk.Frame()
 teamsf.pack(anchor="n", side = "left")
+
 indivsf = ttk.Frame()
 indivsf.pack(anchor="n", side = "right")
 
@@ -229,38 +241,14 @@ teamslab.pack(padx = 50)
 indivlab = ttk.Label(indivsf, text = "Individuals:")
 indivlab.pack(padx = 50)
 
-tbutts = []
-tfile = []
-ibutts = []
-ifile = []
 
-for i in os.listdir(teampath):
-    if i.find("empty_team.json") == -1:
-        with open(os.path.join(teampath,i), "r") as teamf:
-            name = json.load(teamf)["teamname"]
-            teamf.close()
-        tfile.append(i)
-        tbutts.append(ttk.Button(teamsf, text = name))
-        tbutts[-1].pack(padx = 50)
 
-for i in os.listdir(indivpath):
-    if i.find("empty_indiv.json") == -1:
-        with open(os.path.join(indivpath,i), "r") as indivf:
-            name = json.load(indivf)["name"]
-            teamf.close()
-        ifile.append(i)
-        ibutts.append(ttk.Button(indivsf, text = name))
-        ibutts[-1].pack(padx = 50)
+        
 
 
 def update():
     while True:
         Log("updated")
-        # for i in os.listdir(filepath):
-        #     if i != "empty_team.json":
-        #         for i in ibutts:
-        #             i.pack_forget()
-
         time.sleep(5)
 t1 = threading.Thread(target=update, daemon = True)
 t1.start()
@@ -272,7 +260,6 @@ def on_closing():
     Log("Closing")
     #close log file
     f.close()
-    #Joins Update thread with main thread then closes
     #close window and quit
     root.destroy()
     root.quit()

@@ -1,6 +1,5 @@
 import glob
 import json
-import tk as tk
 import os
 from getpass import getpass
 import subprocess
