@@ -134,7 +134,6 @@ Log("Indivs: "+str(indivs))
 
 
 def create(c):
-        global teams, indivs
         #Set dictionaries and call write()
         def Set(c):
             if c == "t":
@@ -207,7 +206,7 @@ def create(c):
             namei.pack()
             addi = ttk.Button(createwin, text = "Create Individual", command = lambda: Set("i"))
             addi.pack(pady = 10)
-        return teams, indivs
+
         
 
 
@@ -223,8 +222,8 @@ indivframe = tk.Frame()
 indivframe.pack()
 teamframe = tk.Frame()
 teamframe.pack()
-indivamt = ttk.Label(indivframe, text = "Individuals: "+ str(indivs) + "\nTeams: "+ str(teams))
-indivamt.pack()
+amt = ttk.Label(indivframe, text = "Individuals: "+ str(indivs) + "\nTeams: "+ str(teams))
+amt.pack()
 indivbutt =  ttk.Button(indivframe, text = "Create an Individual", command = lambda: create("i"))
 indivbutt.pack()
 teambutt = ttk.Button(teamframe, text = "Create a Team", command = lambda: create("t"))
@@ -245,12 +244,56 @@ indivlab.pack(padx = 50)
 
         
 
-
+ifiles = []
+tfiles = []
+ibutts = []
+tbutts = []
 def update():
+    def editpressed(x):
+        editwindow = tk.Toplevel(root)
+        editwindow.geometry("400x300")
+        delete = ttk.Button(editwindow, text = "Delete")
+        delete.pack(anchor = "nw", side="top")
+        xlab = ttk.Label(editwindow, text = "editing " + str(x))
+        xlab.pack()
     while True:
-        Log("updated")
-        time.sleep(5)
-t1 = threading.Thread(target=update, daemon = True)
+        amt.config(text = "Individuals: "+ str(indivs) + "\nTeams: "+ str(teams))
+
+
+
+        for i in os.listdir(indivpath):
+            if i.find("empty") == -1:
+                if str(ifiles).find(i) == -1:
+                    ifiles.append(i)
+        for i in os.listdir(teampath):
+            if i.find("empty") == -1:
+                if str(tfiles).find(i) == -1:
+                    tfiles.append(i)
+
+
+
+
+        for i in range(len(ibutts)):
+            ibutts[i].pack_forget()
+
+        for i in range(len(tbutts)):
+            tbutts[i].pack_forget()
+
+
+
+        for i in ifiles:
+            ibutts.append(ttk.Button(indivsf, text = i, command =  lambda x = i: editpressed(x)))
+            ibutts[-1].pack()
+
+        for i in tfiles:
+            tbutts.append(ttk.Button(teamsf, text = i, command =  lambda x = i: editpressed(x)))
+            tbutts[-1].pack()
+
+
+
+        Log("Updated: " + str(ifiles) + " / " + str(tfiles))
+        time.sleep(3)
+t1 = threading.Thread(target=update, daemon = True, name = "UpdateWorkerThread")
 t1.start()
 
 
@@ -265,8 +308,6 @@ def on_closing():
     root.quit()
     quit(0)
 
-
-    
 root.protocol("WM_DELETE_WINDOW", on_closing)
 root.mainloop()
 #Frontend==================================================================================
