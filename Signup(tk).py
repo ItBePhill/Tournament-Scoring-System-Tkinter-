@@ -208,7 +208,7 @@ def create(c):
         
         else:
             if indivs == 20:
-                if mb.showwarning(message="Sorry we already have enough Individuals", title = "Indiv limit reached"):
+                if mb.showwarning(message="Sorry we already have enough Individuals", title = "Individual limit reached"):
                     createwin.destroy()
             else:
                 createwin.title("Create an individual")
@@ -269,11 +269,13 @@ def update():
         delete.pack(anchor = "nw", side="top")
         xlab = ttk.Label(editwindow, text = "editing " + x)
         xlab.pack()
+
+
+
     while True:
         amt.config(text = "Individuals: "+ str(indivs) + "\nTeams: "+ str(teams))
-
-
-
+        updatet = threading(target = )
+        updatei = threading(target = )
         for i in os.listdir(indivpath):
             if i.find("empty") == -1:
                 if str(ifiles).find(i) == -1:
@@ -282,17 +284,11 @@ def update():
             if i.find("empty") == -1:
                 if str(tfiles).find(i) == -1:
                     tfiles.append(i)
-
-
-
-
         for i in range(len(ibutts)):
             ibutts[i].pack_forget()
 
         for i in range(len(tbutts)):
             tbutts[i].pack_forget()
-
-
 
         for i in ifiles:
             with open(os.path.join(indivpath, i), "r") as r:
