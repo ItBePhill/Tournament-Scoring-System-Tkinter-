@@ -10,7 +10,7 @@ import subprocess
 import time
 #Backend===================================================================================
 logs = []
-version = "0.0"
+version = "0.1"
 teams = 0
 indivs = 0
 
@@ -39,11 +39,12 @@ logspath = os.path.join(filepath, "Logs")
 teampath = os.path.join(filepath, "Teams")
 indivpath = os.path.join(filepath, "Indivs")
 
-#Make logs and get amount of logs
+#Make logs folder and get amount of logs
 if not os.path.exists(logspath):
     os.mkdir(logspath)
 for i in os.listdir(logspath):
      logs.append(i)
+
 #makes teams and indivs folders
 if not os.path.exists(teampath):
     os.mkdir(teampath)
@@ -162,50 +163,61 @@ def create(c):
                 Log("Individual Created, Indivs: "+str(indivs))
                 createwin.destroy()
                 return indivs
-
+            
         createwin = tk.Toplevel(root)
         createwin.geometry("400x600")
         if c == "t":
-            createwin.title("Create a team")
-            addlab = ttk.Label(createwin, text = "Create a Team, (names can be left empty)")
-            addlab.pack()
-            name = ttk.Label(createwin, text = "Input a name for your team")
-            name.pack()
-            nameent = ttk.Entry(createwin)
-            nameent.pack()
+            if teams == 4:
+                if mb.showwarning(message="Sorry we already have enough Teams", title="Team limit reached"):
+                    createwin.destroy()
+            else:
+                createwin.title("Create a team")
+                addlab = ttk.Label(createwin, text = "Create a Team, (names can be left empty)")
+                addlab.pack()
+                name = ttk.Label(createwin, text = "Input a name for your team")
+                name.pack()
+                nameent = ttk.Entry(createwin)
+                nameent.pack()
 
-            names = tk.Frame(createwin)
-            names.pack(pady = 20)
-            person1l = ttk.Label(names,text = "Person 1")
-            person1l.pack()
-            person1 = ttk.Entry(names)
-            person1.pack()
-            person2l = ttk.Label(names,text = "Person 2")
-            person2l.pack()
-            person2 = ttk.Entry(names)
-            person2.pack()
-            person3l = ttk.Label(names,text = "Person 3")
-            person3l.pack()
-            person3 = ttk.Entry(names)
-            person3.pack()
-            person4l = ttk.Label(names,text = "Person 4")
-            person4l.pack()
-            person4 = ttk.Entry(names)
-            person4.pack()
-            person5l = ttk.Label(names,text = "Person 5")
-            person5l.pack()
-            person5 = ttk.Entry(names)
-            person5.pack()
-            add = ttk.Button(names, text = "Create Team", command = lambda: Set("t"))
-            add.pack(pady = 10)
+                names = tk.Frame(createwin)
+                names.pack(pady = 20)
+                person1l = ttk.Label(names,text = "Person 1")
+                person1l.pack()
+                person1 = ttk.Entry(names)
+                person1.pack()
+                person2l = ttk.Label(names,text = "Person 2")
+                person2l.pack()
+                person2 = ttk.Entry(names)
+                person2.pack()
+                person3l = ttk.Label(names,text = "Person 3")
+                person3l.pack()
+                person3 = ttk.Entry(names)
+                person3.pack()
+                person4l = ttk.Label(names,text = "Person 4")
+                person4l.pack()
+                person4 = ttk.Entry(names)
+                person4.pack()
+                person5l = ttk.Label(names,text = "Person 5")
+                person5l.pack()
+                person5 = ttk.Entry(names)
+                person5.pack()
+                add = ttk.Button(names, text = "Create Team", command = lambda: Set("t"))
+                add.pack(pady = 10)
+
+
+        
         else:
-            createwin.title("Create an individual")
-            nameil = ttk.Label(createwin, text= "What is your name?")
-            nameil.pack()
-            namei = ttk.Entry(createwin)
-            namei.pack()
-            addi = ttk.Button(createwin, text = "Create Individual", command = lambda: Set("i"))
-            addi.pack(pady = 10)
+            if indivs == 20:
+                if mb.showwarning(message="Sorry we already have enough Individuals", title = "Indiv limit reached"):
+                    createwin.destroy()
+            else:
+                createwin.title("Create an individual")
+                nameil = ttk.Label(createwin, text= "What is your name?")
+                nameil.pack()
+                namei = ttk.Entry(createwin)
+                namei.pack()
+                addi = ttk.Button(createwin, text = "Create Individual", command = lambda: Set("i"))
+                addi.pack(pady = 10)
 
         
 
@@ -249,12 +261,13 @@ tfiles = []
 ibutts = []
 tbutts = []
 def update():
+    #There's definitely a better way of doing this like checking for changes in the directory but i cba
     def editpressed(x):
         editwindow = tk.Toplevel(root)
         editwindow.geometry("400x300")
         delete = ttk.Button(editwindow, text = "Delete")
         delete.pack(anchor = "nw", side="top")
-        xlab = ttk.Label(editwindow, text = "editing " + str(x))
+        xlab = ttk.Label(editwindow, text = "editing " + x)
         xlab.pack()
     while True:
         amt.config(text = "Individuals: "+ str(indivs) + "\nTeams: "+ str(teams))
@@ -282,11 +295,19 @@ def update():
 
 
         for i in ifiles:
-            ibutts.append(ttk.Button(indivsf, text = i, command =  lambda x = i: editpressed(x)))
+            with open(os.path.join(indivpath, i), "r") as r:
+                data = json.load(r)
+                Log(data)
+                name = data["name"]
+            ibutts.append(ttk.Button(indivsf, text = name, command =  lambda x = i: editpressed(x)))
             ibutts[-1].pack()
 
         for i in tfiles:
-            tbutts.append(ttk.Button(teamsf, text = i, command =  lambda x = i: editpressed(x)))
+            with open(os.path.join(teampath, i), "r") as r:
+                data = json.load(r)
+                Log(data)
+                name = data["teamname"]
+            tbutts.append(ttk.Button(teamsf, text = name, command =  lambda x = i: editpressed(x)))
             tbutts[-1].pack()
 
 
