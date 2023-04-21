@@ -274,8 +274,6 @@ def update():
 
     while True:
         amt.config(text = "Individuals: "+ str(indivs) + "\nTeams: "+ str(teams))
-        updatet = threading(target = )
-        updatei = threading(target = )
         for i in os.listdir(indivpath):
             if i.find("empty") == -1:
                 if str(ifiles).find(i) == -1:
@@ -284,33 +282,35 @@ def update():
             if i.find("empty") == -1:
                 if str(tfiles).find(i) == -1:
                     tfiles.append(i)
-        for i in range(len(ibutts)):
-            ibutts[i].pack_forget()
 
-        for i in range(len(tbutts)):
-            tbutts[i].pack_forget()
 
         for i in ifiles:
-            with open(os.path.join(indivpath, i), "r") as r:
-                data = json.load(r)
-                Log(data)
-                name = data["name"]
-            ibutts.append(ttk.Button(indivsf, text = name, command =  lambda x = i: editpressed(x)))
-            ibutts[-1].pack()
+            for x in range(len(ifiles)):
+                if ibutts[x].cget('text') != i:
+                    with open(os.path.join(indivpath, i), "r") as r:
+                        data = json.load(r)
+                        Log(data)
+                        name = data["name"]
+                        r.close()
+                    ibutts.append(ttk.Button(indivsf, text = name, command =  lambda x = i: editpressed(x)))
+                    ibutts[-1].pack()
 
         for i in tfiles:
-            with open(os.path.join(teampath, i), "r") as r:
-                data = json.load(r)
-                Log(data)
-                name = data["teamname"]
-            tbutts.append(ttk.Button(teamsf, text = name, command =  lambda x = i: editpressed(x)))
-            tbutts[-1].pack()
+            for x in range(len(tfiles)):
+                if tbutts[x].cget('text') != i:
+                    with open(os.path.join(teampath, i), "r") as r:
+                        data = json.load(r)
+                        Log(data)
+                        name = data["teamname"]
+                        r.close()
+                    tbutts.append(ttk.Button(indivsf, text = name, command =  lambda x = i: editpressed(x)))
+                    tbutts[-1].pack()
 
 
 
         Log("Updated: " + str(ifiles) + " / " + str(tfiles))
         time.sleep(3)
-t1 = threading.Thread(target=update, daemon = True, name = "UpdateWorkerThread")
+t1 = threading.Thread(target=update, daemon = True, name = "Update Worker Thread")
 t1.start()
 
 
