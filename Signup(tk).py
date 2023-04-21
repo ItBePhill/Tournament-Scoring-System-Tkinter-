@@ -261,6 +261,7 @@ tfiles = []
 ibutts = []
 tbutts = []
 def update():
+    first = True
     #There's definitely a better way of doing this like checking for changes in the directory but i cba
     def editpressed(x):
         editwindow = tk.Toplevel(root)
@@ -270,10 +271,9 @@ def update():
         xlab = ttk.Label(editwindow, text = "editing " + x)
         xlab.pack()
 
-
-
     while True:
         amt.config(text = "Individuals: "+ str(indivs) + "\nTeams: "+ str(teams))
+
         for i in os.listdir(indivpath):
             if i.find("empty") == -1:
                 if str(ifiles).find(i) == -1:
@@ -282,34 +282,20 @@ def update():
             if i.find("empty") == -1:
                 if str(tfiles).find(i) == -1:
                     tfiles.append(i)
+        if first == True:
+            for i in ifiles:
+                ibutts.append(ttk.Button(indivsf, text = i))
 
+        
+            
+            
 
-        for i in ifiles:
-            for x in range(len(ifiles)):
-                if ibutts[x].cget('text') != i:
-                    with open(os.path.join(indivpath, i), "r") as r:
-                        data = json.load(r)
-                        Log(data)
-                        name = data["name"]
-                        r.close()
-                    ibutts.append(ttk.Button(indivsf, text = name, command =  lambda x = i: editpressed(x)))
-                    ibutts[-1].pack()
-
-        for i in tfiles:
-            for x in range(len(tfiles)):
-                if tbutts[x].cget('text') != i:
-                    with open(os.path.join(teampath, i), "r") as r:
-                        data = json.load(r)
-                        Log(data)
-                        name = data["teamname"]
-                        r.close()
-                    tbutts.append(ttk.Button(indivsf, text = name, command =  lambda x = i: editpressed(x)))
-                    tbutts[-1].pack()
 
 
 
         Log("Updated: " + str(ifiles) + " / " + str(tfiles))
         time.sleep(3)
+        first = False
 t1 = threading.Thread(target=update, daemon = True, name = "Update Worker Thread")
 t1.start()
 
