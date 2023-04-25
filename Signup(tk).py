@@ -283,7 +283,11 @@ def update():
             for i in tbutts:
                 i.pack_forget()
             for i in files:
-                tbutts.append(ttk.Button(teamsf, text = i, command = lambda x = i: editpressed(x)))
+                with open(os.path.join(teampath, i), "r") as r:
+                    data = json.load(r)
+                    r.close()
+                name = data["teamname"]
+                tbutts.append(ttk.Button(teamsf, text = name, command = lambda x = i: editpressed(x)))
                 tbutts[-1].pack()
             Log("Thread: "+str(thread)+" Updated: "+str(files))
             return tbutts
@@ -293,7 +297,11 @@ def update():
             for i in ibutts:
                 i.pack_forget()
             for i in files:
-                ibutts.append(ttk.Button(indivsf, text = i, command = lambda x = i: editpressed(x)))
+                with open(os.path.join(indivpath, i), "r") as r:
+                    data = json.load(r)
+                    r.close()
+                name = data["name"]
+                ibutts.append(ttk.Button(indivsf, text = name, command = lambda x = i: editpressed(x)))
                 ibutts[-1].pack()
             Log("Thread: "+str(thread)+" Updated: "+str(files))
             return ibutts
@@ -308,19 +316,11 @@ def update():
             if i.find("empty") == -1:
                 if str(tfiles).find(i) == -1:
                     tfiles.append(i)
-        if first == True:
-            for i in ifiles:
-                ibutts.append(ttk.Button(indivsf, text = i, command = lambda x = i: editpressed(x)))
-                ibutts[-1].pack()
-            for i in tfiles:
-                tbutts.append(ttk.Button(teamsf, text = i, command = lambda x = i: editpressed(x)))
-                tbutts[-1].pack()
-        else:
-            t1 = threading.Thread(name = "Team Worker Update Thread", daemon= True, target = lambda: updateteams(t1, tfiles))
-            t1.start()
-            t2 = threading.Thread(name = "Indiv Worker Update Thread", daemon= True, target = lambda: updateindivs(t2, ifiles))
-            t2.start()
-            firstthread = False
+        t1 = threading.Thread(name = "Team Worker Update Thread", daemon= True, target = lambda: updateteams(t1, tfiles))
+        t1.start()
+        t2 = threading.Thread(name = "Indiv Worker Update Thread", daemon= True, target = lambda: updateindivs(t2, ifiles))
+        t2.start()
+        firstthread = False
         
 
         
