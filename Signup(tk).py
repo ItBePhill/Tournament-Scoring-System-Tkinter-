@@ -1,3 +1,4 @@
+from email import message
 import tkinter as tk
 from tkinter import ttk
 from tkinter import messagebox as mb
@@ -265,46 +266,100 @@ def update():
     firstthread = True
     #There's definitely a better way of doing this like checking for changes in the directory but i cba
     def editpressed(x):
+        def edit(c):
+            
+        
+            
+        def dele():
+            if mb.askyesno(message = "Are you sure you want to delete: "+ str(x), title = "Delete File"):
+                if str(x).startswith("t"):
+                    os.remove(os.path.join(teampath, x))
+                    editwindow.destroy()
+                if str(x).startswith("i"):
+                    os.remove(os.path.join(indivpath, x))
+                    editwindow.destroy()
         editwindow = tk.Toplevel(root)
         editwindow.geometry("400x300")
-        delete = ttk.Button(editwindow, text = "Delete")
+        delete = ttk.Button(editwindow, text = "Delete", command = lambda x = x : dele())
         delete.pack(anchor = "nw", side="top")
         xlab = ttk.Label(editwindow, text = "editing " + x)
         xlab.pack()
+        if str(x).startswith("t"):
+            editwindow.title("Edit a team")
+            addlab = ttk.Label(editwindow, text = "Edit a Team, (names can be left empty)")
+            addlab.pack()
+            name = ttk.Label(editwindow, text = "Input a name for your team")
+            name.pack()
+            nameent = ttk.Entry(editwindow)
+            nameent.pack()
+
+            names = tk.Frame(editwindow)
+            names.pack(pady = 20)
+            person1l = ttk.Label(names,text = "Person 1")
+            person1l.pack()
+            person1 = ttk.Entry(names)
+            person1.pack()
+            person2l = ttk.Label(names,text = "Person 2")
+            person2l.pack()
+            person2 = ttk.Entry(names)
+            person2.pack()
+            person3l = ttk.Label(names,text = "Person 3")
+            person3l.pack()
+            person3 = ttk.Entry(names)
+            person3.pack()
+            person4l = ttk.Label(names,text = "Person 4")
+            person4l.pack()
+            person4 = ttk.Entry(names)
+            person4.pack()
+            person5l = ttk.Label(names,text = "Person 5")
+            person5l.pack()
+            person5 = ttk.Entry(names)
+            person5.pack()
+            add = ttk.Button(names, text = "Save Team?", command = lambda: edit("t"))
+            add.pack(pady = 10)
+
 
 
     while True:
         if firstthread != True:
             t1.join()
             t2.join()
-        def updateteams(thread, files):
-            global tbutts
+        def updateteams(thread):
+            global tbutts, tfiles
             Log("Teams")
             for i in tbutts:
                 i.pack_forget()
-            for i in files:
-                with open(os.path.join(teampath, i), "r") as r:
-                    data = json.load(r)
-                    r.close()
-                name = data["teamname"]
-                tbutts.append(ttk.Button(teamsf, text = name, command = lambda x = i: editpressed(x)))
-                tbutts[-1].pack()
-            Log("Thread: "+str(thread)+" Updated: "+str(files))
-            return tbutts
-        def updateindivs(thread, files):
-            global ibutts
+            for i in tfiles:
+                if os.path.exists(os.path.join(teampath, i)):
+                    with open(os.path.join(teampath, i), "r") as r:
+                        data = json.load(r)
+                        r.close()
+
+                    name = data["teamname"]
+                    tbutts.append(ttk.Button(teamsf, text = name, command = lambda x = i: editpressed(x)))
+                    tbutts[-1].pack()
+                else:
+                    tfiles.remove(i)
+            Log("Thread: "+str(thread)+" Updated: "+str(tfiles))
+            return tbutts, tfiles
+        def updateindivs(thread):
+            global ibutts, ifiles
             Log("Indivs")
             for i in ibutts:
                 i.pack_forget()
-            for i in files:
-                with open(os.path.join(indivpath, i), "r") as r:
-                    data = json.load(r)
-                    r.close()
-                name = data["name"]
-                ibutts.append(ttk.Button(indivsf, text = name, command = lambda x = i: editpressed(x)))
-                ibutts[-1].pack()
-            Log("Thread: "+str(thread)+" Updated: "+str(files))
-            return ibutts
+            for i in ifiles:
+                if os.path.exists(os.path.join(indivpath, i)):
+                    with open(os.path.join(indivpath, i), "r") as r:
+                        data = json.load(r)
+                        r.close()
+                    name = data["name"]
+                    ibutts.append(ttk.Button(indivsf, text = name, command = lambda x = i: editpressed(x)))
+                    ibutts[-1].pack()
+                else:
+                    ifiles.remove(i)
+
+            Log("Thread: "+str(thread)+" Updated: "+str(ifiles))
+            return ibutts, ifiles
 
         amt.config(text = "Individuals: "+ str(indivs) + "\nTeams: "+ str(teams))
 
@@ -316,9 +371,9 @@ def update():
             if i.find("empty") == -1:
                 if str(tfiles).find(i) == -1:
                     tfiles.append(i)
-        t1 = threading.Thread(name = "Team Worker Update Thread", daemon= True, target = lambda: updateteams(t1, tfiles))
+        t1 = threading.Thread(name = "Team Worker Update Sub-Thread", daemon= True, target = lambda: updateteams(t1))
         t1.start()
-        t2 = threading.Thread(name = "Indiv Worker Update Thread", daemon= True, target = lambda: updateindivs(t2, ifiles))
+        t2 = threading.Thread(name = "Indiv Worker Update Sub-Thread", daemon= True, target = lambda: updateindivs(t2))
         t2.start()
         firstthread = False
         
@@ -330,7 +385,7 @@ def update():
 
 
         Log("Updated")
-        time.sleep(5)
+        time.sleep(3)
         first = False
 t1 = threading.Thread(target=update, daemon = True, name = "Update Worker Thread")
 t1.start()
