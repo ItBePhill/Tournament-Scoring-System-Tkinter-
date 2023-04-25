@@ -262,6 +262,7 @@ ibutts = []
 tbutts = []
 def update():
     first = True
+    firstthread = True
     #There's definitely a better way of doing this like checking for changes in the directory but i cba
     def editpressed(x):
         editwindow = tk.Toplevel(root)
@@ -271,7 +272,32 @@ def update():
         xlab = ttk.Label(editwindow, text = "editing " + x)
         xlab.pack()
 
+
     while True:
+        if firstthread != True:
+            t1.join()
+            t2.join()
+        def updateteams(thread, files):
+            global tbutts
+            Log("Teams")
+            for i in tbutts:
+                i.pack_forget()
+            for i in files:
+                tbutts.append(ttk.Button(teamsf, text = i, command = lambda x = i: editpressed(x)))
+                tbutts[-1].pack()
+            Log("Thread: "+str(thread)+" Updated: "+str(files))
+            return tbutts
+        def updateindivs(thread, files):
+            global ibutts
+            Log("Indivs")
+            for i in ibutts:
+                i.pack_forget()
+            for i in files:
+                ibutts.append(ttk.Button(indivsf, text = i, command = lambda x = i: editpressed(x)))
+                ibutts[-1].pack()
+            Log("Thread: "+str(thread)+" Updated: "+str(files))
+            return ibutts
+
         amt.config(text = "Individuals: "+ str(indivs) + "\nTeams: "+ str(teams))
 
         for i in os.listdir(indivpath):
@@ -284,7 +310,18 @@ def update():
                     tfiles.append(i)
         if first == True:
             for i in ifiles:
-                ibutts.append(ttk.Button(indivsf, text = i))
+                ibutts.append(ttk.Button(indivsf, text = i, command = lambda x = i: editpressed(x)))
+                ibutts[-1].pack()
+            for i in tfiles:
+                tbutts.append(ttk.Button(teamsf, text = i, command = lambda x = i: editpressed(x)))
+                tbutts[-1].pack()
+        else:
+            t1 = threading.Thread(name = "Team Worker Update Thread", daemon= True, target = lambda: updateteams(t1, tfiles))
+            t1.start()
+            t2 = threading.Thread(name = "Indiv Worker Update Thread", daemon= True, target = lambda: updateindivs(t2, ifiles))
+            t2.start()
+            firstthread = False
+        
 
         
             
@@ -292,9 +329,8 @@ def update():
 
 
 
-
-        Log("Updated: " + str(ifiles) + " / " + str(tfiles))
-        time.sleep(3)
+        Log("Updated")
+        time.sleep(5)
         first = False
 t1 = threading.Thread(target=update, daemon = True, name = "Update Worker Thread")
 t1.start()
