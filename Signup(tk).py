@@ -1,4 +1,3 @@
-from email import message
 import tkinter as tk
 from tkinter import ttk
 from tkinter import messagebox as mb
@@ -7,14 +6,12 @@ import glob
 import datetime
 import json
 import threading
-import subprocess
 import time
 #Backend===================================================================================
 logs = []
 version = "0.1"
 teams = 0
 indivs = 0
-
 def Log(ob):
     global f
     now = datetime.datetime.now()
@@ -267,7 +264,34 @@ def update():
     #There's definitely a better way of doing this like checking for changes in the directory but i cba
     def editpressed(x):
         def edit(c):
-            
+            def overwrite():
+                Log("overwrite "+x)
+                try:
+                    with open(os.path.join(teampath, x), "w") as w:
+                        json.dump(team, w)
+                        w.close()
+                except Exception as e:
+                    Log(e)
+                    quit(0)
+                else:
+                    with open(os.path.join(teampath, x), "w") as w:
+                        json.dump(team, w)
+                        w.close()
+                    editwindow.destroy()
+
+
+            if c == "t":
+                global teams
+                team["teamname"] =  nameent.get()
+                team["name0"] = person1.get()
+                team["name1"] = person2.get()
+                team["name2"] = person3.get()
+                team["name3"] = person4.get()
+                team["name4"] = person5.get()
+                overwrite()
+                Log("Team Edited: "+x)
+                editwindow.destroy
+                return teams
         
             
         def dele():
@@ -278,6 +302,7 @@ def update():
                 if str(x).startswith("i"):
                     os.remove(os.path.join(indivpath, x))
                     editwindow.destroy()
+        
         editwindow = tk.Toplevel(root)
         editwindow.geometry("400x300")
         delete = ttk.Button(editwindow, text = "Delete", command = lambda x = x : dele())
@@ -285,6 +310,9 @@ def update():
         xlab = ttk.Label(editwindow, text = "editing " + x)
         xlab.pack()
         if str(x).startswith("t"):
+            with open(os.path.join(teampath, x), "r") as r:
+                data = json.load()
+                r.close()
             editwindow.title("Edit a team")
             addlab = ttk.Label(editwindow, text = "Edit a Team, (names can be left empty)")
             addlab.pack()
@@ -315,7 +343,7 @@ def update():
             person5l.pack()
             person5 = ttk.Entry(names)
             person5.pack()
-            add = ttk.Button(names, text = "Save Team?", command = lambda: edit("t"))
+            add = ttk.Button(names, text = "Save Edits?", command = lambda: edit("t"))
             add.pack(pady = 10)
 
 
@@ -367,10 +395,12 @@ def update():
             if i.find("empty") == -1:
                 if str(ifiles).find(i) == -1:
                     ifiles.append(i)
+                    
         for i in os.listdir(teampath):
             if i.find("empty") == -1:
                 if str(tfiles).find(i) == -1:
                     tfiles.append(i)
+
         t1 = threading.Thread(name = "Team Worker Update Sub-Thread", daemon= True, target = lambda: updateteams(t1))
         t1.start()
         t2 = threading.Thread(name = "Indiv Worker Update Sub-Thread", daemon= True, target = lambda: updateindivs(t2))
