@@ -12,15 +12,23 @@ logs = []
 version = "0.1"
 teams = 0
 indivs = 0
+
 def Log(ob):
     global f
     now = datetime.datetime.now()
     ob = str(ob)
     final = "\n\n["+now.strftime("%Y-%m-%d %H:%M:%S") + "]: " + ob
     print(final)
-    with open(os.path.join(os.getcwd(), "Logs", str(len(logs)))+ " " +now.strftime("%Y-%m-%d")+ " log.txt" , "a") as f:
-        f.write(final)
+    try:
+        with open(os.path.join(os.getcwd(), "Logs", str(len(logs)))+ " " +now.strftime("%Y-%m-%d")+ " log.txt" , "a") as f:
+            f.write(final)
+    except Exception as e:
+        Error(e)
     return f
+def Error(e):
+    Log(e)
+    mb.showerror(message = "Something Went Wrong!: " + str(e), title = "Something went wrong")
+    quit(0)
 team = {
     "id" : "t0",
     "teamname" : "",
@@ -89,34 +97,50 @@ def read():
 def write(c, first):
     if first == True:
         if c == "t":
-
-            with open(os.path.join(teampath, "empty_team"+".json"), "w") as w:
-                json.dump(team, w)
-                w.close()
+            try:
+                with open(os.path.join(teampath, "empty_team"+".json"), "w") as w:
+                    json.dump(team, w)
+                    w.close()
+            except Exception as e:
+                Error(e)
         else:
-
-            with open(os.path.join(indivpath, "empty_indiv"+".json"), "w") as w:
-                json.dump(indiv, w)
-                w.close()
+            try:
+                with open(os.path.join(indivpath, "empty_indiv"+".json"), "w") as w:
+                    json.dump(indiv, w)
+                    w.close()
+            except Exception as e:
+                Error(e)
 
     else:
         if c == "t":
-            with open(os.path.join(teampath, "team "+str(teams)+".json"), "w") as w:
-                json.dump(team, w)
-                w.close()
+            try:
+                with open(os.path.join(teampath, "team "+str(teams)+".json"), "w") as w:
+                    json.dump(team, w)
+                    w.close()
+            except Exception as e:
+                Error(e)
         else:
-            with open(os.path.join(indivpath, "indiv "+str(indivs)+".json"), "w") as w:
-                json.dump(indiv, w)
-                w.close()
+            try:
+                with open(os.path.join(indivpath, "indiv "+str(indivs)+".json"), "w") as w:
+                    json.dump(indiv, w)
+                    w.close()
+            except Exception as e:
+                Error(e)
         
 
 #if there is no team or indiv files makes blank teams and indivs
 for i in os.listdir():
      if i.find("t") == -1:
-        write("t", True)
+        try:
+            write("t", True)
+        except Exception as e:
+            Error(e)
 for i in os.listdir():
      if i.find("i") == -1:
-        write("i", True)
+        try:
+            write("i", True)
+        except Exception as e:
+            Error(e)
 
 #Backend===================================================================================
 #Frontend==================================================================================
@@ -145,7 +169,10 @@ def create(c):
                 team["name2"] = person3.get()
                 team["name3"] = person4.get()
                 team["name4"] = person5.get()
-                write("t", False)
+                try: 
+                    write("t", False)
+                except Exception as e:
+                    Error(e)
                 Log("Team Created, Teams: "+str(teams))
                 createwin.destroy()
                 return teams
@@ -157,7 +184,10 @@ def create(c):
                 else:
                     indiv["id"] = "i"+str(indivs)
                 indiv["name"] = namei.get()
-                write("i", False)
+                try:
+                    write("i", False)
+                except Exception as e:
+                    Error(e)
                 Log("Individual Created, Indivs: "+str(indivs))
                 createwin.destroy()
                 return indivs
@@ -271,8 +301,7 @@ def update():
                         json.dump(team, w)
                         w.close()
                 except Exception as e:
-                    Log(e)
-                    quit(0)
+                    Error(e)
                 else:
                     with open(os.path.join(teampath, x), "w") as w:
                         json.dump(team, w)
@@ -288,7 +317,10 @@ def update():
                 team["name2"] = person3.get()
                 team["name3"] = person4.get()
                 team["name4"] = person5.get()
-                overwrite()
+                try:
+                    overwrite()
+                except Exception as e:
+                    Error(e)
                 Log("Team Edited: "+x)
                 editwindow.destroy
                 return teams
@@ -300,18 +332,22 @@ def update():
                     os.remove(os.path.join(teampath, x))
                     editwindow.destroy()
                 if str(x).startswith("i"):
-                    os.remove(os.path.join(indivpath, x))
-                    editwindow.destroy()
+                    try:
+                        os.remove(os.path.join(indivpath, x))
+                        editwindow.destroy()
+                    except Exception as e:
+                       Error(e)
+
         
         editwindow = tk.Toplevel(root)
-        editwindow.geometry("400x300")
+        editwindow.geometry("400x600")
         delete = ttk.Button(editwindow, text = "Delete", command = lambda x = x : dele())
         delete.pack(anchor = "nw", side="top")
         xlab = ttk.Label(editwindow, text = "editing " + x)
         xlab.pack()
         if str(x).startswith("t"):
             with open(os.path.join(teampath, x), "r") as r:
-                data = json.load()
+                data = json.load(r)  
                 r.close()
             editwindow.title("Edit a team")
             addlab = ttk.Label(editwindow, text = "Edit a Team, (names can be left empty)")
@@ -320,7 +356,6 @@ def update():
             name.pack()
             nameent = ttk.Entry(editwindow)
             nameent.pack()
-
             names = tk.Frame(editwindow)
             names.pack(pady = 20)
             person1l = ttk.Label(names,text = "Person 1")
@@ -343,6 +378,12 @@ def update():
             person5l.pack()
             person5 = ttk.Entry(names)
             person5.pack()
+            nameent.insert(0,data["teamname"])
+            person1.insert(0,data["name0"])
+            person2.insert(0,data["name1"])
+            person3.insert(0,data["name2"])
+            person4.insert(0,data["name3"])
+            person5.insert(0,data["name4"])
             add = ttk.Button(names, text = "Save Edits?", command = lambda: edit("t"))
             add.pack(pady = 10)
 
@@ -395,7 +436,7 @@ def update():
             if i.find("empty") == -1:
                 if str(ifiles).find(i) == -1:
                     ifiles.append(i)
-                    
+
         for i in os.listdir(teampath):
             if i.find("empty") == -1:
                 if str(tfiles).find(i) == -1:
@@ -415,7 +456,7 @@ def update():
 
 
         Log("Updated")
-        time.sleep(3)
+        time.sleep(1)
         first = False
 t1 = threading.Thread(target=update, daemon = True, name = "Update Worker Thread")
 t1.start()
