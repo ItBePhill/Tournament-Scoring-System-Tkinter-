@@ -26,8 +26,9 @@ def Log(ob):
         Error(e)
     return f
 def Error(e):
-    Log(e)
-    mb.showerror(message = "Something Went Wrong!: " + str(e), title = "Something went wrong")
+    Log("Something Went Wrong! Error: " + str(e))
+    mb.showerror(message = "Something Went Wrong!\nError: " + str(e), title = "Something went wrong")
+    root.quit()
     quit(0)
 team = {
     "id" : "t0",
@@ -52,12 +53,16 @@ for i in os.listdir(logspath):
      logs.append(i)
 
 #makes teams and indivs folders
-if not os.path.exists(teampath):
-    os.mkdir(teampath)
-if not os.path.exists(indivpath):
-    os.mkdir(indivpath)
+try:
+    if not os.path.exists(teampath):
+        os.mkdir(teampath)
+    if not os.path.exists(indivpath):
+        os.mkdir(indivpath)
+except Exception as e:
+    Error(e)
+
 Log("Log " + str(len(logs)))
-Log("Program Started Successfully!")
+Log("Program Started")
 #Create Tkinter window and set title + size
 root = tk.Tk()
 root.geometry("800x600")
@@ -169,6 +174,7 @@ def create(c):
                 team["name2"] = person3.get()
                 team["name3"] = person4.get()
                 team["name4"] = person5.get()
+
                 try: 
                     write("t", False)
                 except Exception as e:
@@ -451,8 +457,11 @@ def update():
             
             
 
-
-
+        if first == False:
+            if(os.path.exists(os.path.join(teampath))):
+                Error("Team Folder Missing!")
+            if(os.path.exists(os.path.join(indivpath))):
+                Error("Indiv Folder Missing!")
         time.sleep(5)
         first = False
 t1 = threading.Thread(target=update, daemon = True, name = "Update Worker Thread")
