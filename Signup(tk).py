@@ -395,7 +395,6 @@ def update():
             t2.join()
         def updateteams(thread):
             global tbutts, tfiles
-            Log("Teams")
             for i in tbutts:
                 i.pack_forget()
             for i in tfiles:
@@ -413,7 +412,6 @@ def update():
             return tbutts, tfiles
         def updateindivs(thread):
             global ibutts, ifiles
-            Log("Indivs")
             for i in ibutts:
                 i.pack_forget()
             for i in ifiles:
@@ -455,8 +453,7 @@ def update():
 
 
 
-        Log("Updated")
-        time.sleep(1)
+        time.sleep(5)
         first = False
 t1 = threading.Thread(target=update, daemon = True, name = "Update Worker Thread")
 t1.start()
