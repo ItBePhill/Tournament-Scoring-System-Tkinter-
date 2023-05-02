@@ -287,9 +287,6 @@ indivlab = ttk.Label(indivsf, text = "Individuals:")
 indivlab.pack(padx = 50)
 
 
-
-        
-
 ifiles = []
 tfiles = []
 ibutts = []
@@ -446,11 +443,15 @@ def update():
                 if str(tfiles).find(i) == -1:
                     tfiles.append(i)
 
-        t1 = threading.Thread(name = "Team Worker Update Sub-Thread", daemon= True, target = lambda: updateteams(t1))
-        t1.start()
-        t2 = threading.Thread(name = "Indiv Worker Update Sub-Thread", daemon= True, target = lambda: updateindivs(t2))
-        t2.start()
-        firstthread = False
+
+        try:
+            t1 = threading.Thread(name = "Team Worker Update Sub-Thread", daemon= True, target = lambda: updateteams(t1))
+            t1.start()
+            t2 = threading.Thread(name = "Indiv Worker Update Sub-Thread", daemon= True, target = lambda: updateindivs(t2))
+            t2.start()
+            firstthread = False
+        except Exception as e:
+            Error(e)
         
 
         
@@ -458,9 +459,9 @@ def update():
             
 
         if first == False:
-            if(os.path.exists(os.path.join(teampath))):
+            if(not os.path.exists(teampath)):
                 Error("Team Folder Missing!")
-            if(os.path.exists(os.path.join(indivpath))):
+            if(not os.path.exists(indivpath)):
                 Error("Indiv Folder Missing!")
         time.sleep(5)
         first = False
