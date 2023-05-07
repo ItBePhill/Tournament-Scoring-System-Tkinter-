@@ -140,7 +140,7 @@ for i in os.listdir():
             write("t", True)
         except Exception as e:
             Error(e)
-for i in os.listdir():
+
      if i.find("i") == -1:
         try:
             write("i", True)
@@ -197,6 +197,8 @@ def create(c):
                 Log("Individual Created, Indivs: "+str(indivs))
                 createwin.destroy()
                 return indivs
+
+        
             
         createwin = tk.Toplevel(root)
         createwin.geometry("400x600")
