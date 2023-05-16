@@ -474,7 +474,7 @@ def update():
                     data = json.load(r)  
                     r.close()
             except Exception as e:
-                #My own function for outputting and logging error
+                #My own function for outputting and logging error I know realise I could've just used the Log function but oh well
                 Error(e)
             
             editwindow.title("Edit a team")
