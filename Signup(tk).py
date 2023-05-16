@@ -356,6 +356,7 @@ tfiles = []
 ibutts = []
 tbutts = []
 def update():
+    global teams, indivs
     first = True
     firstthread = True
     #There's definitely a better way of doing this like checking for changes in the directory but i cba
@@ -405,6 +406,7 @@ def update():
                 if person5.get() != "":
                     total +=1
                 if nameent.get() != "":
+
                     if total >= 2:
                         team["teamname"] =  nameent.get()
                         team["name0"] = person1.get()
@@ -533,6 +535,7 @@ def update():
         if firstthread != True:
             t1.join()
             t2.join()
+        
         #Updates Teams List by making a new thread so that each list updates at the same time.
         def updateteams(thread):
             global tbutts, tfiles
@@ -573,18 +576,22 @@ def update():
             Log("Thread: "+str(thread)+" Updated: "+str(ifiles))
             return ibutts, ifiles
 
-        amt.config(text = "Individuals: "+ str(indivs) + "\nTeams: "+ str(teams))
+        teams = len(tfiles)
+        indivs = len(ifiles)
+        amt.config(text = "Individuals: "+ str(len(ifiles)) + "\nTeams: "+ str(len(tfiles)))
 
-        #Gets a list of every indiv/team files
+        #Gets a list of every indiv/team file
         for i in os.listdir(indivpath):
             if i.find("empty") == -1:
                 if str(ifiles).find(i) == -1:
                     ifiles.append(i)
 
+
         for i in os.listdir(teampath):
             if i.find("empty") == -1:
                 if str(tfiles).find(i) == -1:
                     tfiles.append(i)
+
 
         # Starts Team and Update List Update Threads
         try:
@@ -598,8 +605,7 @@ def update():
         
 
         
-            
-            
+        
         #Checks for missing Folders
         if first == False:
             if(not os.path.exists(teampath)):
@@ -608,6 +614,9 @@ def update():
                 Error("Indiv Folder Missing!")
         time.sleep(3)
         first = False
+
+
+        
 #Starts update main thread
 t1 = threading.Thread(target=update, daemon = True, name = "Update Worker Thread")
 t1.start()
