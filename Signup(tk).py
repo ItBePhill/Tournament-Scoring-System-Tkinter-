@@ -8,6 +8,7 @@ import datetime
 import json
 import threading
 import time
+"hello".split
 #Backend===================================================================================
 #global variables like logs list and teams/individuals
 logs = []
@@ -191,40 +192,66 @@ Log("Indivs: "+str(indivs))
 def create(c):
         #Set dictionaries and call write()
         def Set(c):
+            global teams
             #Set 
             if c == "t":
-                global teams
-                teams +=1
-                team["id"] = "t"+str(teams)
-                team["teamname"] =  nameent.get()
-                team["name0"] = person1.get()
-                team["name1"] = person2.get()
-                team["name2"] = person3.get()
-                team["name3"] = person4.get()
-                team["name4"] = person5.get()
+                total = 0
+                if person1.get() != "":
+                    total +=1
+                if person2.get() != "":
+                    total +=1
+                if person3.get() != "":
+                    total +=1
+                if person4.get() != "":
+                    total +=1
+                if person5.get() != "":
+                    total +=1
+                if nameent.get() != "":
+                    if total >= 2:
+                        teams +=1
+                        team["id"] = "t"+str(teams)
+                        team["teamname"] =  nameent.get()
+                        team["name0"] = person1.get()
+                        team["name1"] = person2.get()
+                        team["name2"] = person3.get()
+                        team["name3"] = person4.get()
+                        team["name4"] = person5.get()
+                        try: 
+                            write("t", False)
+                        except Exception as e:
+                            Error(e)
+                        Log("Team Created, Teams: "+str(teams))
+                        createwin.destroy()
+                        return teams
 
-                try: 
-                    write("t", False)
-                except Exception as e:
-                    Error(e)
-                Log("Team Created, Teams: "+str(teams))
-                createwin.destroy()
-                return teams
+                    else:
+                        mb.showwarning(title = "Invalid team", message = "A team must contain at least two people")
+                else:
+                    mb.showwarning(title = "Invalid team", message = "Your team needs a name!")
+                
+                
+                
+
+
             else:
                 global indivs
-                indivs+=1
-                if indivs < 10:
-                    indiv["id"] = "i"+str(str(0)+str(indivs))
+                if namei.get() != "":
+                    indivs+=1
+                    if indivs < 10:
+                        indiv["id"] = "i"+str(str(0)+str(indivs))
+                    else:
+                        indiv["id"] = "i"+str(indivs)
+                    indiv["name"] = namei.get()
+                    try:
+                        write("i", False)
+                    except Exception as e:
+                        Error(e)
+                    Log("Individual Created, Indivs: "+str(indivs))
+                    createwin.destroy()
+                    return indivs
                 else:
-                    indiv["id"] = "i"+str(indivs)
-                indiv["name"] = namei.get()
-                try:
-                    write("i", False)
-                except Exception as e:
-                    Error(e)
-                Log("Individual Created, Indivs: "+str(indivs))
-                createwin.destroy()
-                return indivs
+                    mb.showwarning(title = "Invalid individual", message = "Name required!")
+                
             
         createwin = tk.Toplevel(root)
         createwin.geometry("400x600")
@@ -366,27 +393,48 @@ def update():
 
 
             if c == "t":
-                team["teamname"] =  nameent.get()
-                team["name0"] = person1.get()
-                team["name1"] = person2.get()
-                team["name2"] = person3.get()
-                team["name3"] = person4.get()
-                team["name4"] = person5.get()
-                try:
-                    overwrite("t")
-                except Exception as e:
-                    Error(e)
-                Log("Team Edited: "+x)
-                editwindow.destroy
+                total = 0
+                if person1.get() != "":
+                    total +=1
+                if person2.get() != "":
+                    total +=1
+                if person3.get() != "":
+                    total +=1
+                if person4.get() != "":
+                    total +=1
+                if person5.get() != "":
+                    total +=1
+                if nameent.get() != "":
+                    if total >= 2:
+                        team["teamname"] =  nameent.get()
+                        team["name0"] = person1.get()
+                        team["name1"] = person2.get()
+                        team["name2"] = person3.get()
+                        team["name3"] = person4.get()
+                        team["name4"] = person5.get()
+                        try:
+                            overwrite("t")
+                        except Exception as e:
+                            Error(e)
+                        Log("Team Edited: "+x)
+                        editwindow.destroy
+                    else:
+                        mb.showwarning(title = "Invalid team", message = "A team must contain at least two people!")
+                else:
+                    mb.showwarning(title = "Invalid team", message = "Your team needs a name!")
 
             if c == "i":
-                indiv["name"] = namei.get()
-                try:
-                    overwrite("i")
-                except Exception as e:
-                    Error(e)
-                Log("Indiv Edited: "+x)
-                editwindow.destroy()
+                if namei.get() != "":
+                    indiv["name"] = namei.get()
+                    try:
+                        overwrite("i")
+                    except Exception as e:
+                        Error(e)
+                    Log("Indiv Edited: "+x)
+                    editwindow.destroy()
+                else:
+                    mb.showwarning(title = "Invalid individual", message = "Name required!")
+
 
         # used for deleting files
         def dele():
@@ -558,7 +606,7 @@ def update():
                 Error("Team Folder Missing!")
             if(not os.path.exists(indivpath)):
                 Error("Indiv Folder Missing!")
-        time.sleep(5)
+        time.sleep(3)
         first = False
 #Starts update main thread
 t1 = threading.Thread(target=update, daemon = True, name = "Update Worker Thread")
