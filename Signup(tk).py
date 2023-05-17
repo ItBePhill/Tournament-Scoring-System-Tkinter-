@@ -121,7 +121,7 @@ def read():
     
     
 #Write Function called when a file needs to be written to
-def write(c, first):
+def write(c, first, name):
     #checks if this is the first time a file is being written (specified when calling function)
     if first == True:
         #checks if the file being written is a team or individual (again specified when calling)
@@ -144,19 +144,23 @@ def write(c, first):
     else:
         #if this isn't the first write, check if team or indiv again
         if c == "t":
-            #write to team file using team dict
+            #write to team file using team dictionary
             try:
-                with open(os.path.join(teampath, "team "+str(teams)+".json"), "w") as w:
+                with open(os.path.join(teampath, "team "+ name+".json"), "w") as w:
                     json.dump(team, w)
                     w.close()
+                    
+                #mb.showwarning(title = "Invalid Name", message = "There is already a team with this name")
             except Exception as e:
                 Error(e)
         else:
             #write to indiv file using indiv dict
             try:
-                with open(os.path.join(indivpath, "indiv "+str(indivs)+".json"), "w") as w:
+                with open(os.path.join(indivpath, "indiv "+ name + ".json"), "w") as w:
                     json.dump(indiv, w)
                     w.close()
+                    
+                        #mb.showwarning(title = "Invalid Name", message = "There is already a participant with this name")
             except Exception as e:
                 Error(e)
         
@@ -165,13 +169,13 @@ def write(c, first):
 for i in os.listdir():
      if i.find("t") == -1:
         try:
-            write("t", True)
+            write("t", True, "Empty")
         except Exception as e:
             Error(e)
 for i in os.listdir():
      if i.find("i") == -1:
         try:
-            write("i", True)
+            write("i", True, "Empty")
         except Exception as e:
             Error(e)
 
@@ -217,7 +221,7 @@ def create(c):
                         team["name3"] = person4.get()
                         team["name4"] = person5.get()
                         try: 
-                            write("t", False)
+                            write("t", False, nameent.get())
                         except Exception as e:
                             Error(e)
                         Log("Team Created, Teams: "+str(teams))
@@ -243,7 +247,7 @@ def create(c):
                         indiv["id"] = "i"+str(indivs)
                     indiv["name"] = namei.get()
                     try:
-                        write("i", False)
+                        write("i", False, namei.get())
                     except Exception as e:
                         Error(e)
                     Log("Individual Created, Indivs: "+str(indivs))
@@ -458,16 +462,19 @@ def update():
                     except Exception as e:
                        Error(e)
 
-        #create Editing window and sets title/geometry
+        #create Editing window and sets title/size
         editwindow = tk.Toplevel(root)
         editwindow.geometry("400x600")
         #create Delete Button/title for file being deleted
         delete = ttk.Button(editwindow, text = "Delete", command = lambda x = x : dele())
         delete.pack(anchor = "nw", side="top")
-        xlab = ttk.Label(editwindow, text = "editing " + x)
-        xlab.pack()
+        
         
         if str(x).startswith("t"):
+            with open(os.path.join(teampath, x), "r") as r:
+                teamname = json.load(r)["teamname"]
+            xlab = ttk.Label(editwindow, text = "editing " + teamname + "; " + x)
+            xlab.pack()
             #open file we are editing to get names out of it.
             try:
                 with open(os.path.join(teampath, x), "r") as r:
@@ -517,6 +524,10 @@ def update():
             add.pack(pady = 10)
 
         if str(x).startswith("i"):
+            with open(os.path.join(indivpath, x), "r") as r:
+                name = json.load(r)["name"]
+            xlab = ttk.Label(editwindow, text = "editing " + name + "; " + x)
+            xlab.pack()
             with open(os.path.join(indivpath, x), "r") as r:
                 data = json.load(r)
                 r.close()
@@ -625,13 +636,15 @@ t1.start()
                 
 
 def on_closing():
-    Log("Closing")
-    #close log file
-    f.close()
-    #close window and quit
-    root.destroy()
-    root.quit()
-    quit(0)
+    if mb.askyesno(title = "Quitting", message= "Are you sure you want to quit?"):
+        Log("Closing")
+        #close log file
+        f.close()
+        #close window and quit
+        root.destroy()
+        root.quit()
+        quit(0)
+
 # checks for closing the window and runs on_closing function
 root.protocol("WM_DELETE_WINDOW", on_closing)
 root.mainloop()
