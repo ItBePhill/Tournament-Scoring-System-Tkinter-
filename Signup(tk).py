@@ -8,7 +8,8 @@ import datetime
 import json
 import threading
 import time
-"hello".split
+import traceback
+import sys
 #Backend===================================================================================
 #global variables like logs list and teams/individuals
 logs = []
@@ -34,10 +35,17 @@ def Log(ob):
     return f
 #Called when an error occurs in the program and logs the error before closing
 def Error(e):
-    Log("Something Went Wrong! Error: " + str(e))
-    mb.showerror(message = "Something Went Wrong!\nError: " + str(e), title = "Something went wrong")
+    Log("Something Went Wrong! Error:  " + str(e))
+    mb.showerror(message = "Something Went Wrong! Closing!\nError: \n\n" + str(e), title = "Something went wrong")
     root.quit()
     quit(0)
+
+def show_exception_and_exit(exc_type):
+    Error(str(exc_type))
+
+
+sys.excepthook = show_exception_and_exit
+threading.excepthook = show_exception_and_exit
 
 #team/indivs dictionary formats
 team = {
@@ -151,8 +159,8 @@ def write(c, first, name):
                     w.close()
 
 
-                #saved for later use on team/indiv creator 
-                #mb.showwarning(title = "Invalid Name", message = "There is already a team with this name")
+        
+                
             except Exception as e:
                 Error(e)
         else:
@@ -162,7 +170,7 @@ def write(c, first, name):
                     json.dump(indiv, w)
                     w.close()
                     
-                        #mb.showwarning(title = "Invalid Name", message = "There is already a participant with this name")
+                        
             except Exception as e:
                 Error(e)
         
@@ -201,62 +209,71 @@ def create(c):
             global teams
             #Set 
             if c == "t":
-                total = 0
-                if person1.get() != "":
-                    total +=1
-                if person2.get() != "":
-                    total +=1
-                if person3.get() != "":
-                    total +=1
-                if person4.get() != "":
-                    total +=1
-                if person5.get() != "":
-                    total +=1
-                if nameent.get() != "":
-                    if total >= 2:
-                        teams +=1
-                        team["id"] = "t"+str(teams)
-                        team["teamname"] =  nameent.get()
-                        team["name0"] = person1.get()
-                        team["name1"] = person2.get()
-                        team["name2"] = person3.get()
-                        team["name3"] = person4.get()
-                        team["name4"] = person5.get()
-                        try: 
-                            write("t", False, nameent.get())
-                        except Exception as e:
-                            Error(e)
-                        Log("Team Created, Teams: "+str(teams))
-                        createwin.destroy()
-                        return teams
+                if not os.path.exists(os.path.join(teampath, "team " + nameent.get()+".json")):
+                    total = 0
+                    if person1.get() != "":
+                        total +=1
+                    if person2.get() != "":
+                        total +=1
+                    if person3.get() != "":
+                        total +=1
+                    if person4.get() != "":
+                        total +=1
+                    if person5.get() != "":
+                        total +=1
+                    if nameent.get() != "":
+                        if total >= 2:
+                            teams +=1
+                            team["id"] = "t"+str(teams)
+                            team["teamname"] =  nameent.get()
+                            team["name0"] = person1.get()
+                            team["name1"] = person2.get()
+                            team["name2"] = person3.get()
+                            team["name3"] = person4.get()
+                            team["name4"] = person5.get()
+                            try: 
+                                write("t", False, nameent.get())
+                            except Exception as e:
+                                Error(e)
+                            Log("Team Created, Teams: "+str(teams))
+                            createwin.destroy()
+                            return teams
 
+                        else:
+                            mb.showwarning(title = "Invalid team", message = "A team must contain at least two people")
                     else:
-                        mb.showwarning(title = "Invalid team", message = "A team must contain at least two people")
+                        mb.showwarning(title = "Invalid team", message = "Your team needs a name!")
                 else:
-                    mb.showwarning(title = "Invalid team", message = "Your team needs a name!")
+                    mb.showwarning(title = "Invalid Name", message = "There is already a team with this name")
+                
                 
                 
                 
 
 
             else:
-                global indivs
-                if namei.get() != "":
-                    indivs+=1
-                    if indivs < 10:
-                        indiv["id"] = "i"+str(str(0)+str(indivs))
+
+                if not os.path.exists(os.path.join(indivpath, "indiv " + namei.get()+".json")):
+                    global indivs
+                    if namei.get() != "":
+                        indivs+=1
+                        if indivs < 10:
+                            indiv["id"] = "i"+str(str(0)+str(indivs))
+                        else:
+                            indiv["id"] = "i"+str(indivs)
+                        indiv["name"] = namei.get()
+                        try:
+                            write("i", False, namei.get())
+                        except Exception as e:
+                            Error(e)
+                        Log("Individual Created, Indivs: "+str(indivs))
+                        createwin.destroy()
+                        return indivs
                     else:
-                        indiv["id"] = "i"+str(indivs)
-                    indiv["name"] = namei.get()
-                    try:
-                        write("i", False, namei.get())
-                    except Exception as e:
-                        Error(e)
-                    Log("Individual Created, Indivs: "+str(indivs))
-                    createwin.destroy()
-                    return indivs
+                        mb.showwarning(title = "Invalid individual", message = "Name required!")
                 else:
-                    mb.showwarning(title = "Invalid individual", message = "Name required!")
+                    mb.showwarning(title = "Invalid Name", message = "There is already a participant with this name")
+                    
                 
             
         createwin = tk.Toplevel(root)
@@ -400,48 +417,55 @@ def update():
 
 
             if c == "t":
-                total = 0
-                if person1.get() != "":
-                    total +=1
-                if person2.get() != "":
-                    total +=1
-                if person3.get() != "":
-                    total +=1
-                if person4.get() != "":
-                    total +=1
-                if person5.get() != "":
-                    total +=1
-                if nameent.get() != "":
+                if not os.path.exists(os.path.join(teampath, "team " + nameent.get()+".json")):
+                    total = 0
+                    if person1.get() != "":
+                        total +=1
+                    if person2.get() != "":
+                        total +=1
+                    if person3.get() != "":
+                        total +=1
+                    if person4.get() != "":
+                        total +=1
+                    if person5.get() != "":
+                        total +=1
+                    if nameent.get() != "":
 
-                    if total >= 2:
-                        team["teamname"] =  nameent.get()
-                        team["name0"] = person1.get()
-                        team["name1"] = person2.get()
-                        team["name2"] = person3.get()
-                        team["name3"] = person4.get()
-                        team["name4"] = person5.get()
-                        try:
-                            overwrite("t")
-                        except Exception as e:
-                            Error(e)
-                        Log("Team Edited: "+x)
-                        editwindow.destroy
+                        if total >= 2:
+                            team["teamname"] =  nameent.get()
+                            team["name0"] = person1.get()
+                            team["name1"] = person2.get()
+                            team["name2"] = person3.get()
+                            team["name3"] = person4.get()
+                            team["name4"] = person5.get()
+                            try:
+                                overwrite("t")
+                            except Exception as e:
+                                Error(e)
+                            Log("Team Edited: "+x)
+                            editwindow.destroy
+                        else:
+                            mb.showwarning(title = "Invalid team", message = "A team must contain at least two people!")
                     else:
-                        mb.showwarning(title = "Invalid team", message = "A team must contain at least two people!")
+                        mb.showwarning(title = "Invalid team", message = "Your team needs a name!")
                 else:
-                    mb.showwarning(title = "Invalid team", message = "Your team needs a name!")
+                    mb.showwarning(title = "Invalid Name", message = "There is already a team with this name")
+
 
             if c == "i":
-                if namei.get() != "":
-                    indiv["name"] = namei.get()
-                    try:
-                        overwrite("i")
-                    except Exception as e:
-                        Error(e)
-                    Log("Indiv Edited: "+x)
-                    editwindow.destroy()
+                if not os.path.exists(os.path.join(indivpath, "indiv " + namei.get()+".json")):
+                    if namei.get() != "":
+                        indiv["name"] = namei.get()
+                        try:
+                            overwrite("i")
+                        except Exception as e:
+                            Error(e)
+                        Log("Indiv Edited: "+x)
+                        editwindow.destroy()
+                    else:
+                        mb.showwarning(title = "Invalid individual", message = "Name required!")
                 else:
-                    mb.showwarning(title = "Invalid individual", message = "Name required!")
+                    mb.showwarning(title = "Invalid Name", message = "There is already a team with this name")
 
 
         # used for deleting files
@@ -585,9 +609,10 @@ def update():
                     ibutts[-1].pack()
                 else:
                     ifiles.remove(i)
-
+            ############################################################################################################
             Log("Thread: "+str(thread)+" Updated: "+str(ifiles))
             return ibutts, ifiles
+            ############################################################################################################
 
         teams = len(tfiles)
         indivs = len(ifiles)
@@ -633,7 +658,6 @@ def update():
 #Starts update main thread
 t1 = threading.Thread(target=update, daemon = True, name = "Update Worker Thread")
 t1.start()
-
 
                 
 
