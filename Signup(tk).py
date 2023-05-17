@@ -149,7 +149,9 @@ def write(c, first, name):
                 with open(os.path.join(teampath, "team "+ name+".json"), "w") as w:
                     json.dump(team, w)
                     w.close()
-                    
+
+
+                #saved for later use on team/indiv creator 
                 #mb.showwarning(title = "Invalid Name", message = "There is already a team with this name")
             except Exception as e:
                 Error(e)
