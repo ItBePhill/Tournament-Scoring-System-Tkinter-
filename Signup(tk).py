@@ -16,36 +16,36 @@ logs = []
 version = "0.1"
 teams = 0
 indivs = 0
+class util:
+    #Logging
+    def Log(ob):
+        global f
+        now = datetime.datetime.now()
+        ob = str(ob)
+        #create a string for the time and date that gets appended to the front of a log
+        final = "\n\n["+now.strftime("%Y-%m-%d %H:%M:%S") + "]: " + ob
+        print(final)
+        try:
+            #write to / create a log file
+            with open(os.path.join(os.getcwd(), "Logs", str(len(logs)))+ " " +now.strftime("%Y-%m-%d")+ " log.txt" , "a") as f:
+                f.write(final)
+        except Exception as e:
+            util.Error(e)
+        #returns log file so the file can be closed when the program is closed instead of having to open the file every time the function is called
+        return f
+    #Called when an error occurs in the program and logs the error before closing
+    def Error(e):
+        util.Log("Something Went Wrong! Error:  " + str(e))
+        mb.showerror(message = "Something Went Wrong! Closing!\nError: \n\n" + str(e), title = "Something went wrong")
+        root.quit()
+        quit(0)
 
-#Logging
-def Log(ob):
-    global f
-    now = datetime.datetime.now()
-    ob = str(ob)
-    #create a string for the time and date that gets appended to the front of a log
-    final = "\n\n["+now.strftime("%Y-%m-%d %H:%M:%S") + "]: " + ob
-    print(final)
-    try:
-        #write to / create a log file
-        with open(os.path.join(os.getcwd(), "Logs", str(len(logs)))+ " " +now.strftime("%Y-%m-%d")+ " log.txt" , "a") as f:
-            f.write(final)
-    except Exception as e:
-        Error(e)
-    #returns log file so the file can be closed when the program is closed instead of having to open the file every time the function is called
-    return f
-#Called when an error occurs in the program and logs the error before closing
-def Error(e):
-    Log("Something Went Wrong! Error:  " + str(e))
-    mb.showerror(message = "Something Went Wrong! Closing!\nError: \n\n" + str(e), title = "Something went wrong")
-    root.quit()
-    quit(0)
-
-def show_exception_and_exit(exc_type):
-    Error(str(exc_type))
+    def show_exception_and_exit(exc_type):
+        util.Error(str(exc_type))
 
 
-sys.excepthook = show_exception_and_exit
-threading.excepthook = show_exception_and_exit
+sys.excepthook = util.show_exception_and_exit
+threading.excepthook = util.show_exception_and_exit
 
 #team/indivs dictionary formats
 team = {
@@ -77,20 +77,19 @@ try:
     if not os.path.exists(indivpath):
         os.mkdir(indivpath)
 except Exception as e:
-    Error(e)
+    util.Error(e)
 
-Log("Log " + str(len(logs)))
-Log("Program Started")
+util.Log("Log " + str(len(logs)))
+util.Log("Program Started")
 
 
 #Create Tkinter window and set title + size
 root = tk.Tk()
 root.geometry("800x600")
 root.title("Tournament Scoring System Version: "+ version)
-
 #read from most recent team and indiv file
 def read():
-        Log("Read")
+        util.Log("Read")
         teams = []
         indivs = []
         #get every json from the folder the file is in and all subfolders
@@ -105,23 +104,23 @@ def read():
         #sort teams/individuals by the time that they were created and reverse it so it is descending
         teams.sort(key = lambda x: os.path.getctime(x), reverse = True)
         indivs.sort(key = lambda x: os.path.getctime(x), reverse = True)
-        Log(indivs)
-        Log(teams)
-        Log(teams[0])
-        Log(indivs[0])
+        util.Log(indivs)
+        util.Log(teams)
+        util.Log(teams[0])
+        util.Log(indivs[0])
         #open files and set teamdata and indivdata
         try:
             with open(teams[0], "r") as w:
                 teamdata = json.load(w)
         except Exception as e:
-            Error(e)
-        Log(teamdata)
+            util.Error(e)
+        util.Log(teamdata)
         try:
             with open(indivs[0], "r") as w:
                 indivdata = json.load(w)
         except Exception as e:
-            Error(e)
-        Log(indivdata)
+            util.Error(e)
+        util.Log(indivdata)
         return teamdata, indivdata
 
 
@@ -140,14 +139,14 @@ def write(c, first, name):
                     json.dump(team, w)
                     w.close()
             except Exception as e:
-                Error(e)
+                util.Error(e)
         else:
             try:
                 with open(os.path.join(indivpath, "empty_indiv"+".json"), "w") as w:
                     json.dump(indiv, w)
                     w.close()
             except Exception as e:
-                Error(e)
+                util.Error(e)
 
     else:
         #if this isn't the first write, check if team or indiv again
@@ -162,7 +161,7 @@ def write(c, first, name):
         
                 
             except Exception as e:
-                Error(e)
+                util.Error(e)
         else:
             #write to indiv file using indiv dict
             try:
@@ -172,7 +171,7 @@ def write(c, first, name):
                     
                         
             except Exception as e:
-                Error(e)
+                util.Error(e)
         
 
 #if there is no team or indiv files makes blank teams and indivs
@@ -181,13 +180,13 @@ for i in os.listdir():
         try:
             write("t", True, "Empty")
         except Exception as e:
-            Error(e)
+            util.Error(e)
 for i in os.listdir():
      if i.find("i") == -1:
         try:
             write("i", True, "Empty")
         except Exception as e:
-            Error(e)
+            util.Error(e)
 
 #Backend===================================================================================
 #Frontend==================================================================================
@@ -197,8 +196,8 @@ teams = int(teamdata["id"][1])
 indivs1 = indivdata["id"][1]
 indivs2 = indivdata["id"][2]
 indivs = int(str(indivs1)+str(indivs2))
-Log("Teams: "+str(teams))
-Log("Indivs: "+str(indivs))
+util.Log("Teams: "+str(teams))
+util.Log("Indivs: "+str(indivs))
 
 
 
@@ -234,8 +233,8 @@ def create(c):
                             try: 
                                 write("t", False, nameent.get())
                             except Exception as e:
-                                Error(e)
-                            Log("Team Created, Teams: "+str(teams))
+                                util.Error(e)
+                            util.Log("Team Created, Teams: "+str(teams))
                             createwin.destroy()
                             return teams
 
@@ -250,7 +249,7 @@ def create(c):
                 
                 
 
-
+  
             else:
 
                 if not os.path.exists(os.path.join(indivpath, "indiv " + namei.get()+".json")):
@@ -265,8 +264,8 @@ def create(c):
                         try:
                             write("i", False, namei.get())
                         except Exception as e:
-                            Error(e)
-                        Log("Individual Created, Indivs: "+str(indivs))
+                            util.Error(e)
+                        util.Log("Individual Created, Indivs: "+str(indivs))
                         createwin.destroy()
                         return indivs
                     else:
@@ -387,14 +386,14 @@ def update():
         def edit(c):
             #overwriting the file
             def overwrite(c):
-                Log("overwrite "+x)
+                util.Log("overwrite "+x)
                 if c == "t":
                     try:
                         with open(os.path.join(teampath, x), "w") as w:
                             json.dump(team, w)
                             w.close()
                     except Exception as e:
-                        Error(e)
+                        util.Error(e)
                     else:
                         with open(os.path.join(teampath, x), "w") as w:
                             json.dump(team, w)
@@ -407,7 +406,7 @@ def update():
                             json.dump(indiv, w)
                             w.close()
                     except Exception as e:
-                        Error(e)
+                        util.Error(e)
                     else:
                         with open(os.path.join(indivpath, x), "w") as w:
                             json.dump(indiv, w)
@@ -441,8 +440,8 @@ def update():
                             try:
                                 overwrite("t")
                             except Exception as e:
-                                Error(e)
-                            Log("Team Edited: "+x)
+                                util.Error(e)
+                            util.Log("Team Edited: "+x)
                             editwindow.destroy
                         else:
                             mb.showwarning(title = "Invalid team", message = "A team must contain at least two people!")
@@ -459,8 +458,8 @@ def update():
                         try:
                             overwrite("i")
                         except Exception as e:
-                            Error(e)
-                        Log("Indiv Edited: "+x)
+                            util.Error(e)
+                        util.Log("Indiv Edited: "+x)
                         editwindow.destroy()
                     else:
                         mb.showwarning(title = "Invalid individual", message = "Name required!")
@@ -479,14 +478,14 @@ def update():
                         os.remove(os.path.join(teampath, x))
                         editwindow.destroy()
                     except Exception as e:
-                        Error(e)
+                        util.Error(e)
                 if str(x).startswith("i"):
                     #deletes file and closes window
                     try:
                         os.remove(os.path.join(indivpath, x))
                         editwindow.destroy()
                     except Exception as e:
-                       Error(e)
+                       util.Error(e)
 
         #create Editing window and sets title/size
         editwindow = tk.Toplevel(root)
@@ -508,7 +507,7 @@ def update():
                     r.close()
             except Exception as e:
                 #My own function for outputting and logging error I know realise I could've just used the Log function but oh well
-                Error(e)
+                util.Error(e)
             
             editwindow.title("Edit a team")
             #Add Buttons for editing team
@@ -590,7 +589,7 @@ def update():
                     tbutts[-1].pack()
                 else:
                     tfiles.remove(i)
-            Log("Thread: "+str(thread)+" Updated: "+str(tfiles))
+            util.Log("Thread: "+str(thread)+" Updated: "+str(tfiles))
             return tbutts, tfiles
         #Updates Individuals List by making a new thread so that each list updates at the same time.
         def updateindivs(thread):
@@ -610,7 +609,7 @@ def update():
                 else:
                     ifiles.remove(i)
             ############################################################################################################
-            Log("Thread: "+str(thread)+" Updated: "+str(ifiles))
+            util.Log("Thread: "+str(thread)+" Updated: "+str(ifiles))
             return ibutts, ifiles
             ############################################################################################################
 
@@ -639,7 +638,7 @@ def update():
             t2.start()
             firstthread = False
         except Exception as e:
-            Error(e)
+            util.Error(e)
         
 
         
@@ -647,9 +646,9 @@ def update():
         #Checks for missing Folders
         if first == False:
             if(not os.path.exists(teampath)):
-                Error("Team Folder Missing!")
+                util.Error("Team Folder Missing!")
             if(not os.path.exists(indivpath)):
-                Error("Indiv Folder Missing!")
+                util.Error("Indiv Folder Missing!")
         time.sleep(3)
         first = False
 
@@ -663,7 +662,7 @@ t1.start()
 
 def on_closing():
     if mb.askyesno(title = "Quitting", message= "Are you sure you want to quit?"):
-        Log("Closing")
+        util.Log("Closing")
         #close log file
         f.close()
         #close window and quit
