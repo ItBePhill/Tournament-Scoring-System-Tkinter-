@@ -47,7 +47,6 @@ root.title("Events")
 class normal:
     options = ["choose an option", "option1", "option2", "option3"]
     #Main window stuff
-    
     WindowTitle = ttk.Label(root, text = "Events", font = ("Segoe UI", 16))
     WindowTitle.pack()
     
