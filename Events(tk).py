@@ -49,12 +49,14 @@ class normal:
     #Main window stuff
     WindowTitle = ttk.Label(root, text = "Events", font = ("Segoe UI", 16))
     WindowTitle.pack()
+
+    CreateEvent = ttk.Button(text = "")
     
 
 
 
     def on_closing():
-
+ 
         if mb.askyesno(title = "Quitting", message= "Are you sure you want to quit?"):
             util.Log("Closing")
             #close log file
