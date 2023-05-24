@@ -1,3 +1,4 @@
+from locale import normalize
 import tkinter as tk
 from tkinter import ttk
 from tkinter import messagebox as mb
@@ -39,24 +40,33 @@ class util:
     sys.excepthook = show_exception_and_exit
     threading.excepthook = show_exception_and_exit
 
-
-
-
+root =  tk.Tk()
+root.geometry("800x600")
+root.title("Events")
 
 class normal:
     options = ["choose an option", "option1", "option2", "option3"]
     #Main window stuff
-    root =  tk.Tk()
-    root.geometry("800x600")
-    root.title("Events")
+    
     WindowTitle = ttk.Label(root, text = "Events", font = ("Segoe UI", 16))
     WindowTitle.pack()
     
 
 
 
+    def on_closing():
+
+        if mb.askyesno(title = "Quitting", message= "Are you sure you want to quit?"):
+            util.Log("Closing")
+            #close log file
+            f.close()
+            #close window and quit
+            root.destroy()
+            root.quit()
+            quit(0)
 
 
 
-
-    root.mainloop()
+# checks for closing the window and runs on_closing function
+root.protocol("WM_DELETE_WINDOW", normal.on_closing)
+root.mainloop()
