@@ -51,6 +51,7 @@ class normal:
     root.title("Events")
     WindowTitle = ttk.Label(root, text = "Events", font = ("Segoe UI", 16))
     WindowTitle.pack()
+    
 
 
 
