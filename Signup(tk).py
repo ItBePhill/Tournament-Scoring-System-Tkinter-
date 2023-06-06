@@ -579,7 +579,7 @@ def update():
             for i in tbutts:
                 i.pack_forget()
             #for every file in the list of team files if the file exists open it and create a button for the file with the teamname of the team
-            for i in tfiles:
+            for i in tfiles: 
                 if os.path.exists(os.path.join(teampath, i)):
                     with open(os.path.join(teampath, i), "r") as r:
                         data = json.load(r)
