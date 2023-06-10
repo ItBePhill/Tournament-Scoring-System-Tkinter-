@@ -1,1 +1,1 @@
-
+I tried stopping the message box windows from focusing the main window but couldnt find a way.

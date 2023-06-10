@@ -1,3 +1,4 @@
+#imports
 import tkinter as tk
 from tkinter import ttk
 from tkinter import messagebox as mb
@@ -7,29 +8,46 @@ import datetime
 import json
 import threading
 import time
+import traceback
+import sys
 #Backend===================================================================================
+#global variables like logs list and teams/individuals
 logs = []
 version = "0.1"
 teams = 0
 indivs = 0
+class util:
+    #Logging
+    def Log(ob):
+        global f
+        now = datetime.datetime.now()
+        ob = str(ob)
+        #create a string for the time and date that gets appended to the front of a log
+        final = "\n\n["+now.strftime("%Y-%m-%d %H:%M:%S") + "]: " + ob
+        print(final)
+        try:
+            #write to / create a log file
+            with open(os.path.join(os.getcwd(), "Logs", str(len(logs)))+ " " +now.strftime("%Y-%m-%d")+ " log.txt" , "a") as f:
+                f.write(final)
+        except Exception as e:
+            util.Error(e)
+        #returns log file so the file can be closed when the program is closed instead of having to open the file every time the function is called
+        return f
+    #Called when an error occurs in the program and logs the error before closing
+    def Error(e):
+        util.Log("Something Went Wrong! Error:  " + str(e))
+        mb.showerror(message = "Something Went Wrong! Closing!\nError: \n\n" + str(e), title = "Something went wrong")
+        root.quit()
+        quit(0)
 
-def Log(ob):
-    global f
-    now = datetime.datetime.now()
-    ob = str(ob)
-    final = "\n\n["+now.strftime("%Y-%m-%d %H:%M:%S") + "]: " + ob
-    print(final)
-    try:
-        with open(os.path.join(os.getcwd(), "Logs", str(len(logs)))+ " " +now.strftime("%Y-%m-%d")+ " log.txt" , "a") as f:
-            f.write(final)
-    except Exception as e:
-        Error(e)
-    return f
-def Error(e):
-    Log("Something Went Wrong! Error: " + str(e))
-    mb.showerror(message = "Something Went Wrong!\nError: " + str(e), title = "Something went wrong")
-    root.quit()
-    quit(0)
+    def show_exception_and_exit(exc_type):
+        util.Error(str(exc_type))
+
+
+sys.excepthook = util.show_exception_and_exit
+threading.excepthook = util.show_exception_and_exit
+
+#team/indivs dictionary formats
 team = {
     "id" : "t0",
     "teamname" : "",
@@ -59,93 +77,116 @@ try:
     if not os.path.exists(indivpath):
         os.mkdir(indivpath)
 except Exception as e:
-    Error(e)
+    util.Error(e)
 
-Log("Log " + str(len(logs)))
-Log("Program Started")
+util.Log("Log " + str(len(logs)))
+util.Log("Program Started")
+
+
 #Create Tkinter window and set title + size
 root = tk.Tk()
 root.geometry("800x600")
 root.title("Tournament Scoring System Version: "+ version)
 #read from most recent team and indiv file
 def read():
-        Log("Read")
+        util.Log("Read")
         teams = []
         indivs = []
-        #read from team
+        #get every json from the folder the file is in and all subfolders
         files = glob.glob(filepath + "**/*.json", recursive= True)
 
+        #appends file to teams folder if it is a team folder
         for i in files:
             if i.find("team") != -1:
                 teams.append(i)
             else:
                  indivs.append(i)
+        #sort teams/individuals by the time that they were created and reverse it so it is descending
         teams.sort(key = lambda x: os.path.getctime(x), reverse = True)
         indivs.sort(key = lambda x: os.path.getctime(x), reverse = True)
-        Log(indivs)
-        Log(teams)
-        Log(teams[0])
-        Log(indivs[0])
-        with open(teams[0], "r") as w:
-            teamdata = json.load(w)
-        Log(teamdata)
-        with open(indivs[0], "r") as w:
-            indivdata = json.load(w)
-        Log(indivdata)
+        util.Log(indivs)
+        util.Log(teams)
+        util.Log(teams[0])
+        util.Log(indivs[0])
+        #open files and set teamdata and indivdata
+        try:
+            with open(teams[0], "r") as w:
+                teamdata = json.load(w)
+        except Exception as e:
+            util.Error(e)
+        util.Log(teamdata)
+        try:
+            with open(indivs[0], "r") as w:
+                indivdata = json.load(w)
+        except Exception as e:
+            util.Error(e)
+        util.Log(indivdata)
         return teamdata, indivdata
 
 
 
     
     
-
-def write(c, first):
+#Write Function called when a file needs to be written to
+def write(c, first, name):
+    #checks if this is the first time a file is being written (specified when calling function)
     if first == True:
+        #checks if the file being written is a team or individual (again specified when calling)
         if c == "t":
+            #create an empty file to read from when there are no team or individual files
             try:
                 with open(os.path.join(teampath, "empty_team"+".json"), "w") as w:
                     json.dump(team, w)
                     w.close()
             except Exception as e:
-                Error(e)
+                util.Error(e)
         else:
             try:
                 with open(os.path.join(indivpath, "empty_indiv"+".json"), "w") as w:
                     json.dump(indiv, w)
                     w.close()
             except Exception as e:
-                Error(e)
+                util.Error(e)
 
     else:
+        #if this isn't the first write, check if team or indiv again
         if c == "t":
+            #write to team file using team dictionary
             try:
-                with open(os.path.join(teampath, "team "+str(teams)+".json"), "w") as w:
+                with open(os.path.join(teampath, "team "+ name+".json"), "w") as w:
                     json.dump(team, w)
                     w.close()
+
+
+        
+                
             except Exception as e:
-                Error(e)
+                util.Error(e)
         else:
+            #write to indiv file using indiv dict
             try:
-                with open(os.path.join(indivpath, "indiv "+str(indivs)+".json"), "w") as w:
+                with open(os.path.join(indivpath, "indiv "+ name + ".json"), "w") as w:
                     json.dump(indiv, w)
                     w.close()
+                    
+                        
             except Exception as e:
-                Error(e)
+                util.Error(e)
         
 
 #if there is no team or indiv files makes blank teams and indivs
 for i in os.listdir():
      if i.find("t") == -1:
         try:
-            write("t", True)
+            write("t", True, "Empty")
         except Exception as e:
-            Error(e)
+            util.Error(e)
 
      if i.find("i") == -1:
         try:
-            write("i", True)
+            write("i", True, "Empty")
         except Exception as e:
-            Error(e)
+            util.Error(e)
 
 #Backend===================================================================================
 #Frontend==================================================================================
@@ -155,8 +196,8 @@ teams = int(teamdata["id"][1])
 indivs1 = indivdata["id"][1]
 indivs2 = indivdata["id"][2]
 indivs = int(str(indivs1)+str(indivs2))
-Log("Teams: "+str(teams))
-Log("Indivs: "+str(indivs))
+util.Log("Teams: "+str(teams))
+util.Log("Indivs: "+str(indivs))
 
 
 
@@ -164,49 +205,85 @@ Log("Indivs: "+str(indivs))
 def create(c):
         #Set dictionaries and call write()
         def Set(c):
+            global teams
+            #Set 
             if c == "t":
-                global teams
-                teams +=1
-                team["id"] = "t"+str(teams)
-                team["teamname"] =  nameent.get()
-                team["name0"] = person1.get()
-                team["name1"] = person2.get()
-                team["name2"] = person3.get()
-                team["name3"] = person4.get()
-                team["name4"] = person5.get()
+                if not os.path.exists(os.path.join(teampath, "team " + nameent.get()+".json")):
+                    total = 0
+                    if person1.get() != "":
+                        total +=1
+                    if person2.get() != "":
+                        total +=1
+                    if person3.get() != "":
+                        total +=1
+                    if person4.get() != "":
+                        total +=1
+                    if person5.get() != "":
+                        total +=1
+                    if nameent.get() != "":
+                        if total >= 2:
+                            teams +=1
+                            team["id"] = "t"+str(teams)
+                            team["teamname"] =  nameent.get()
+                            team["name0"] = person1.get()
+                            team["name1"] = person2.get()
+                            team["name2"] = person3.get()
+                            team["name3"] = person4.get()
+                            team["name4"] = person5.get()
+                            try: 
+                                write("t", False, nameent.get())
+                            except Exception as e:
+                                util.Error(e)
+                            util.Log("Team Created, Teams: "+str(teams))
+                            createwin.destroy()
+                            return teams
 
-                try: 
-                    write("t", False)
-                except Exception as e:
-                    Error(e)
-                Log("Team Created, Teams: "+str(teams))
-                createwin.destroy()
-                return teams
-            else:
-                global indivs
-                indivs+=1
-                if indivs < 10:
-                    indiv["id"] = "i"+str(str(0)+str(indivs))
+                        else:
+                            mb.showwarning(title = "Invalid team", message = "A team must contain at least two people")
+                    else:
+                        mb.showwarning(title = "Invalid team", message = "Your team needs a name!")
                 else:
-                    indiv["id"] = "i"+str(indivs)
-                indiv["name"] = namei.get()
-                try:
-                    write("i", False)
-                except Exception as e:
-                    Error(e)
-                Log("Individual Created, Indivs: "+str(indivs))
-                createwin.destroy()
-                return indivs
+                    mb.showwarning(title = "Invalid Name", message = "There is already a team with this name")
+                
+                
+                
+                
 
-        
+  
+            else:
+
+                if not os.path.exists(os.path.join(indivpath, "indiv " + namei.get()+".json")):
+                    global indivs
+                    if namei.get() != "":
+                        indivs+=1
+                        if indivs < 10:
+                            indiv["id"] = "i"+str(str(0)+str(indivs))
+                        else:
+                            indiv["id"] = "i"+str(indivs)
+                        indiv["name"] = namei.get()
+                        try:
+                            write("i", False, namei.get())
+                        except Exception as e:
+                            util.Error(e)
+                        util.Log("Individual Created, Indivs: "+str(indivs))
+                        createwin.destroy()
+                        return indivs
+                    else:
+                        mb.showwarning(title = "Invalid individual", message = "Name required!")
+                else:
+                    mb.showwarning(title = "Invalid Name", message = "There is already a participant with this name")
+                    
+                
             
         createwin = tk.Toplevel(root)
         createwin.geometry("400x600")
         if c == "t":
+            #Check if there are 4 teams if so tell user they cant enter
             if teams == 4:
                 if mb.showwarning(message="Sorry we already have enough Teams", title="Team limit reached"):
                     createwin.destroy()
             else:
+                #otherwise make buttons for making a team
                 createwin.title("Create a team")
                 addlab = ttk.Label(createwin, text = "Create a Team, (names can be left empty)")
                 addlab.pack()
@@ -215,6 +292,8 @@ def create(c):
                 nameent = ttk.Entry(createwin)
                 nameent.pack()
 
+
+                #Make a frame for holding entries for entering names.
                 names = tk.Frame(createwin)
                 names.pack(pady = 20)
                 person1l = ttk.Label(names,text = "Person 1")
@@ -237,16 +316,19 @@ def create(c):
                 person5l.pack()
                 person5 = ttk.Entry(names)
                 person5.pack()
+                #button for making the team
                 add = ttk.Button(names, text = "Create Team", command = lambda: Set("t"))
                 add.pack(pady = 10)
 
 
         
         else:
+            #Check if there are already 20 individuals and if so tell the user they cant enter and close creation window
             if indivs == 20:
                 if mb.showwarning(message="Sorry we already have enough Individuals", title = "Individual limit reached"):
                     createwin.destroy()
             else:
+                #if there are slots left create buttons/labels for creating an individual
                 createwin.title("Create an individual")
                 nameil = ttk.Label(createwin, text= "What is your name?")
                 nameil.pack()
@@ -261,17 +343,19 @@ def create(c):
     
 
 
-
+#Title of main window
 lab =  ttk.Label(text = "Tournament Scoring System", font = ("Segoe UI", 16))
 lab.pack(pady = 10)
 
-
+#Creates a frame for teams and indivs that lists/buttons are put in
 indivframe = tk.Frame()
 indivframe.pack()
 teamframe = tk.Frame()
 teamframe.pack()
+#labels for amount of individuals/teams
 amt = ttk.Label(indivframe, text = "Individuals: "+ str(indivs) + "\nTeams: "+ str(teams))
 amt.pack()
+#Buttons for making teams/individuals
 indivbutt =  ttk.Button(indivframe, text = "Create an Individual", command = lambda: create("i"))
 indivbutt.pack()
 teambutt = ttk.Button(teamframe, text = "Create a Team", command = lambda: create("t"))
@@ -294,67 +378,139 @@ tfiles = []
 ibutts = []
 tbutts = []
 def update():
+    global teams, indivs
     first = True
     firstthread = True
     #There's definitely a better way of doing this like checking for changes in the directory but i cba
     def editpressed(x):
         def edit(c):
-            def overwrite():
-                Log("overwrite "+x)
-                try:
-                    with open(os.path.join(teampath, x), "w") as w:
-                        json.dump(team, w)
-                        w.close()
-                except Exception as e:
-                    Error(e)
+            #overwriting the file
+            def overwrite(c):
+                util.Log("overwrite "+x)
+                if c == "t":
+                    try:
+                        with open(os.path.join(teampath, x), "w") as w:
+                            json.dump(team, w)
+                            w.close()
+                    except Exception as e:
+                        util.Error(e)
+                    else:
+                        with open(os.path.join(teampath, x), "w") as w:
+                            json.dump(team, w)
+                            w.close()
+                        editwindow.destroy()
+
                 else:
-                    with open(os.path.join(teampath, x), "w") as w:
-                        json.dump(team, w)
-                        w.close()
-                    editwindow.destroy()
+                    try:
+                        with open(os.path.join(indivpath, x), "w") as w:
+                            json.dump(indiv, w)
+                            w.close()
+                    except Exception as e:
+                        util.Error(e)
+                    else:
+                        with open(os.path.join(indivpath, x), "w") as w:
+                            json.dump(indiv, w)
+                            w.close()
+                        editwindow.destroy()
+
 
 
             if c == "t":
-                global teams
-                team["teamname"] =  nameent.get()
-                team["name0"] = person1.get()
-                team["name1"] = person2.get()
-                team["name2"] = person3.get()
-                team["name3"] = person4.get()
-                team["name4"] = person5.get()
-                try:
-                    overwrite()
-                except Exception as e:
-                    Error(e)
-                Log("Team Edited: "+x)
-                editwindow.destroy
-                return teams
-        
-            
+                if not os.path.exists(os.path.join(teampath, "team " + nameent.get()+".json")):
+                    total = 0
+                    if person1.get() != "":
+                        total +=1
+                    if person2.get() != "":
+                        total +=1
+                    if person3.get() != "":
+                        total +=1
+                    if person4.get() != "":
+                        total +=1
+                    if person5.get() != "":
+                        total +=1
+                    if nameent.get() != "":
+
+                        if total >= 2:
+                            team["teamname"] =  nameent.get()
+                            team["name0"] = person1.get()
+                            team["name1"] = person2.get()
+                            team["name2"] = person3.get()
+                            team["name3"] = person4.get()
+                            team["name4"] = person5.get()
+                            try:
+                                overwrite("t")
+                            except Exception as e:
+                                util.Error(e)
+                            util.Log("Team Edited: "+x)
+                            editwindow.destroy
+                        else:
+                            mb.showwarning(title = "Invalid team", message = "A team must contain at least two people!")
+                    else:
+                        mb.showwarning(title = "Invalid team", message = "Your team needs a name!")
+                else:
+                    mb.showwarning(title = "Invalid Name", message = "There is already a team with this name")
+
+
+            if c == "i":
+                if not os.path.exists(os.path.join(indivpath, "indiv " + namei.get()+".json")):
+                    if namei.get() != "":
+                        indiv["name"] = namei.get()
+                        try:
+                            overwrite("i")
+                        except Exception as e:
+                            util.Error(e)
+                        util.Log("Indiv Edited: "+x)
+                        editwindow.destroy()
+                    else:
+                        mb.showwarning(title = "Invalid individual", message = "Name required!")
+                else:
+                    mb.showwarning(title = "Invalid Name", message = "There is already a team with this name")
+
+
+        # used for deleting files
         def dele():
+            #asks the user if they if they are sure they want to delete
             if mb.askyesno(message = "Are you sure you want to delete: "+ str(x), title = "Delete File"):
+                #checks if the file being deleted is a team or individual
                 if str(x).startswith("t"):
-                    os.remove(os.path.join(teampath, x))
-                    editwindow.destroy()
+                    #deletes file and closes window
+                    try:
+                        os.remove(os.path.join(teampath, x))
+                        editwindow.destroy()
+                    except Exception as e:
+                        util.Error(e)
                 if str(x).startswith("i"):
+                    #deletes file and closes window
                     try:
                         os.remove(os.path.join(indivpath, x))
                         editwindow.destroy()
                     except Exception as e:
-                       Error(e)
+                       util.Error(e)
 
-        
+        #create Editing window and sets title/size
         editwindow = tk.Toplevel(root)
         editwindow.geometry("400x600")
+        #create Delete Button/title for file being deleted
         delete = ttk.Button(editwindow, text = "Delete", command = lambda x = x : dele())
         delete.pack(anchor = "nw", side="top")
-        xlab = ttk.Label(editwindow, text = "editing " + x)
-        xlab.pack()
+        
+        
         if str(x).startswith("t"):
             with open(os.path.join(teampath, x), "r") as r:
-                data = json.load(r)  
-                r.close()
+                teamname = json.load(r)["teamname"]
+            xlab = ttk.Label(editwindow, text = "editing " + teamname + "; " + x)
+            xlab.pack()
+            #open file we are editing to get names out of it.
+            try:
+                with open(os.path.join(teampath, x), "r") as r:
+                    data = json.load(r)  
+                    r.close()
+            except Exception as e:
+                #My own function for outputting and logging error I know realise I could've just used the Log function but oh well
+                util.Error(e)
+            
             editwindow.title("Edit a team")
+            #Add Buttons for editing team
             addlab = ttk.Label(editwindow, text = "Edit a Team, (names can be left empty)")
             addlab.pack()
             name = ttk.Label(editwindow, text = "Input a name for your team")
@@ -392,33 +548,56 @@ def update():
             add = ttk.Button(names, text = "Save Edits?", command = lambda: edit("t"))
             add.pack(pady = 10)
 
+        if str(x).startswith("i"):
+            with open(os.path.join(indivpath, x), "r") as r:
+                name = json.load(r)["name"]
+            xlab = ttk.Label(editwindow, text = "editing " + name + "; " + x)
+            xlab.pack()
+            with open(os.path.join(indivpath, x), "r") as r:
+                data = json.load(r)
+                r.close()
+            editwindow.title("Edit an individual")
+            nameil = ttk.Label(editwindow, text= "What is your name?")
+            nameil.pack()
+            namei = ttk.Entry(editwindow)
+            namei.pack()
+            addi = ttk.Button(editwindow, text = "Save Edits", command = lambda: edit("i"))
+            addi.pack(pady = 10)
+            namei.insert(0, data["name"])
 
 
+    #checks if update sub-threads are running and if they are join them back to the main thread.
     while True:
         if firstthread != True:
             t1.join()
             t2.join()
+        
+        #Updates Teams List by making a new thread so that each list updates at the same time.
         def updateteams(thread):
             global tbutts, tfiles
+            #delete all team buttons
             for i in tbutts:
                 i.pack_forget()
-            for i in tfiles:
+            #for every file in the list of team files if the file exists open it and create a button for the file with the teamname of the team
+            for i in tfiles: 
                 if os.path.exists(os.path.join(teampath, i)):
                     with open(os.path.join(teampath, i), "r") as r:
                         data = json.load(r)
                         r.close()
-
                     name = data["teamname"]
                     tbutts.append(ttk.Button(teamsf, text = name, command = lambda x = i: editpressed(x)))
                     tbutts[-1].pack()
                 else:
                     tfiles.remove(i)
-            Log("Thread: "+str(thread)+" Updated: "+str(tfiles))
+            util.Log("Thread: "+str(thread)+" Updated: "+str(tfiles))
             return tbutts, tfiles
+        #Updates Individuals List by making a new thread so that each list updates at the same time.
         def updateindivs(thread):
             global ibutts, ifiles
+            #delete all individual buttons
             for i in ibutts:
                 i.pack_forget()
+            #for every file in the list of individual files if the file exists open it and create a button for the file with the name of the individual
             for i in ifiles:
                 if os.path.exists(os.path.join(indivpath, i)):
                     with open(os.path.join(indivpath, i), "r") as r:
@@ -429,16 +608,21 @@ def update():
                     ibutts[-1].pack()
                 else:
                     ifiles.remove(i)
-
-            Log("Thread: "+str(thread)+" Updated: "+str(ifiles))
+            ############################################################################################################
+            util.Log("Thread: "+str(thread)+" Updated: "+str(ifiles))
             return ibutts, ifiles
+            ############################################################################################################
 
-        amt.config(text = "Individuals: "+ str(indivs) + "\nTeams: "+ str(teams))
+        teams = len(tfiles)
+        indivs = len(ifiles)
+        amt.config(text = "Individuals: "+ str(len(ifiles)) + "\nTeams: "+ str(len(tfiles)))
 
+        #Gets a list of every indiv/team file
         for i in os.listdir(indivpath):
             if i.find("empty") == -1:
                 if str(ifiles).find(i) == -1:
                     ifiles.append(i)
+
 
         for i in os.listdir(teampath):
             if i.find("empty") == -1:
@@ -446,6 +630,7 @@ def update():
                     tfiles.append(i)
 
 
+        # Starts Team and Update List Update Threads
         try:
             t1 = threading.Thread(name = "Team Worker Update Sub-Thread", daemon= True, target = lambda: updateteams(t1))
             t1.start()
@@ -453,35 +638,39 @@ def update():
             t2.start()
             firstthread = False
         except Exception as e:
-            Error(e)
+            util.Error(e)
         
 
         
-            
-            
-
+        
+        #Checks for missing Folders
         if first == False:
             if(not os.path.exists(teampath)):
-                Error("Team Folder Missing!")
+                util.Error("Team Folder Missing!")
             if(not os.path.exists(indivpath)):
-                Error("Indiv Folder Missing!")
-        time.sleep(5)
+                util.Error("Indiv Folder Missing!")
+        time.sleep(3)
         first = False
+
+
+        
+#Starts update main thread
 t1 = threading.Thread(target=update, daemon = True, name = "Update Worker Thread")
 t1.start()
-
 
                 
 
 def on_closing():
-    Log("Closing")
-    #close log file
-    f.close()
-    #close window and quit
-    root.destroy()
-    root.quit()
-    quit(0)
+    if mb.askyesno(title = "Quitting", message= "Are you sure you want to quit?"):
+        util.Log("Closing")
+        #close log file
+        f.close()
+        #close window and quit
+        root.destroy()
+        root.quit()
+        quit(0)
 
+# checks for closing the window and runs on_closing function
 root.protocol("WM_DELETE_WINDOW", on_closing)
 root.mainloop()
 #Frontend==================================================================================
