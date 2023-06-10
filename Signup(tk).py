@@ -608,10 +608,10 @@ def update():
                     ibutts[-1].pack()
                 else:
                     ifiles.remove(i)
-            ############################################################################################################
+            
             util.Log("Thread: "+str(thread)+" Updated: "+str(ifiles))
             return ibutts, ifiles
-            ############################################################################################################
+            
 
         teams = len(tfiles)
         indivs = len(ifiles)
