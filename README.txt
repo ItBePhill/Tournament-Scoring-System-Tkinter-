@@ -1,3 +1,6 @@
+This was made as a project for college
+
+
 Launch dist\Launcher.exe to start the program.
 If there's any issues with it just launch the Launcher.py file.
 
